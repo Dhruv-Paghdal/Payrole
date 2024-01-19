@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 
 const options = {
     timestamps:{
@@ -18,36 +19,26 @@ const employeeSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: true,
     },
     employeeId: {
         type: String,
 		required: true,
-    },
-    bankDetails: {
-        name: {
-            type: String,
-            required: true,
-        },
-        branch: {
-            type: String,
-            required: true,
-        },
-        accountNumber: {
-            type: String,
-            required: true,
-        }
     },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
     },
     degisnation: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         required: true,
     },
-    addedBy: {
-        type: mongoose.Schema.Types.ObjectId,
+    wageType: {
+        type: String,
+        enum: ["HOUR", "DAY"],
+        required: true,
+    },
+    wageAmount: {
+        type: String,
         required: true,
     },
     isDeleted: {
@@ -67,16 +58,16 @@ module.exports = {
             throw error;
         }
     }, 
-    findAll: async(query) => {
+    findAll: async(query, projection) => {
         try {
-            return await Employee.find(query)
+            return await Employee.find(query, projection)
         } catch (error) {
             throw error;
         }
     },
-    findOne: async(query) => {
+    findOne: async(query, projection) => {
         try {
-            return await Employee.findOne(query);
+            return await Employee.findOne(query, projection);
         } catch (error) {
             throw error;
         }

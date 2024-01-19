@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 
 const options = {
     timestamps:{
@@ -8,29 +9,59 @@ const options = {
     collection: 'companies'
 }
 const companySchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
+    clientID: {
+        type: mongoose.Schema.ObjectId,
     },
-    email: {
+    userName: {
         type: String,
-        required: true,
+        require: true
     },
-    address: {
-        addressLine1: {
+    password: {
+        type: String,
+        require: true
+    },
+    startDate: {
+        type: Date
+    },
+    endDate: {
+        type: Date
+    },
+    subscriptionHistory: {
+        type: [String],
+        default: []
+    },
+    mobile: {
+        type: String
+    },
+    companyName: {
+        type: String
+    },
+    companyCode: {
+        type: String
+    },
+    companyAddress: {
+        addressLine: {
             type: String,
         },
-        addressLine2: {
+        landmark: {
             type: String,
         },
         city: {
             type: String,
+        },
+        state: {
+            type: String,
+        },
+        country: {
+            type: String,
+        },
+        zipCode: {
+            type: Number,
         }
     },
-    ownerDetail:{
+    ownerDetail:[{
         name: {
             type: String,
-            required: true,
         },
         mobile: {
             type: String,
@@ -38,19 +69,19 @@ const companySchema = new mongoose.Schema({
         email: {
             type: String,
         }
-    },
-    logo: {
-        type: String,
-        required: true,
+    }],
+    isAdmin: {
+        type: Boolean,
+        default: false
     },
     isActive: {
         type: Boolean,
-        required: true
+        default: false
     },
     isDeleted: {
         default: false,
         type: Boolean
-    },
+    }
 }, options);
 
 const Company = mongoose.model("Company", companySchema);
@@ -64,16 +95,16 @@ module.exports = {
             throw error;
         }
     }, 
-    findAll: async(query) => {
+    findAll: async(query, projection) => {
         try {
-            return await Company.find(query)
+            return await Company.find(query, projection)
         } catch (error) {
             throw error;
         }
     },
-    findOne: async(query) => {
+    findOne: async(query, projection) => {
         try {
-            return await Company.findOne(query);
+            return await Company.findOne(query, projection);
         } catch (error) {
             throw error;
         }

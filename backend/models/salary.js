@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 
 const options = {
     timestamps:{
@@ -49,16 +50,16 @@ module.exports = {
             throw error;
         }
     }, 
-    findAll: async(query) => {
+    findAll: async(query, projection) => {
         try {
-            return await Salary.find(query)
+            return await Salary.find(query, projection)
         } catch (error) {
             throw error;
         }
     },
-    findOne: async(query) => {
+    findOne: async(query, projection) => {
         try {
-            return await Salary.findOne(query);
+            return await Salary.findOne(query, projection);
         } catch (error) {
             throw error;
         }

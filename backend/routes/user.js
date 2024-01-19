@@ -1,5 +1,5 @@
 const userRouter = require('express').Router();
-const validation = require("../common/validation")
+const validation = require("../helpers/validation")
 const { checkSchema } = require('express-validator');
 const userService = require("../services/userService");
 
