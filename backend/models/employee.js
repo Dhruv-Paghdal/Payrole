@@ -38,7 +38,23 @@ const employeeSchema = new mongoose.Schema({
         required: true,
     },
     wageAmount: {
-        type: String,
+        type: Number,
+        required: true,
+    },
+    workingHour: {
+        type: Number,
+        required: true,
+    },
+    overTimeWagePercentage: {
+        type: Number,
+        required: true,
+    },
+    travelAllowance: {
+        type: Number,
+        required: true,
+    },
+    recessTime: {
+        type: Number,
         required: true,
     },
     isDeleted: {

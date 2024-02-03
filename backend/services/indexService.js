@@ -24,10 +24,10 @@ exports.login = async(req, res) => {
         }
         const token = jwt.sign(jwtData, process.env.JWT_KEY)
         if(!token){
-            return res.status(400).json({staus:400, message: "Error while login", data: ""}) 
+            return res.status(400).json({status:400, message: "Error while login", data: ""}) 
         }
         return res.status(200).json({status: 200, message: "Login Successfull", data: token})
     } catch (error) {
-        return res.status(400).json({staus:400, message: "Error while login", data: ""}) 
+        return res.status(400).json({status:400, message: "Error while login", data: ""}) 
     }
 }

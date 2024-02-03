@@ -10,7 +10,7 @@ const options = {
 }
 const companySchema = new mongoose.Schema({
     clientID: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
     },
     userName: {
         type: String,
@@ -37,6 +37,12 @@ const companySchema = new mongoose.Schema({
         type: String
     },
     companyCode: {
+        type: String
+    },
+    workingYear: {
+        type: String
+    },
+    weekOffDay: {
         type: String
     },
     companyAddress: {
@@ -69,6 +75,9 @@ const companySchema = new mongoose.Schema({
         email: {
             type: String,
         }
+    }],
+    workingYearList: [{
+        type: String
     }],
     isAdmin: {
         type: Boolean,

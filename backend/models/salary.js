@@ -9,30 +9,66 @@ const options = {
     collection: 'salaries'
 }
 const salarySchema = new mongoose.Schema({
-    employee: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-    },
-    amount: {
-        type: String,
-        required: true,
-    },
-    month: {
-        type: String,
-        required: true,
-    },
     company: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,
     },
-    isPaid: {
-        type: Boolean,
+    workingYear: {
+        type: String,
         required: true,
     },
-    addedBy: {
-        type: mongoose.Schema.Types.ObjectId,
+    month: {
+        type: Number,
         required: true,
     },
+    year: {
+        type: Number,
+        required: true,
+    },
+    salaryDetails: [{
+        employee: {
+            type: String,
+            required: true,
+        },
+        employeeId: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true
+        },
+        totalWorkingDays: {
+            type: Number,
+            required: true,
+        },
+        totalOverTimePeriod: {
+            type: Number,
+        },
+        OverTimeSalary: {
+            type: Number,
+        },
+        totalAdvanceSalary: {
+            type: Number,
+        },
+        totalOtherExpenseByCompany: {
+            type: Number
+        }, 
+        totalTravelAllowance: {
+            type: Number,
+        },
+        finalSalary: {
+            type: Number,
+            required: true,
+        },
+        advanceList: [{
+            date: {
+                type: String
+            },
+            amount: {
+                type: Number
+            }
+        }],
+        absent: {
+            type: [String]
+        }
+    }],
     isDeleted: {
         default: false,
         type: Boolean

@@ -6,6 +6,8 @@ const userRoutes = require('./routes/user');
 const indexRoutes = require('./routes/index');
 const companyRoutes = require('./routes/company');
 const employeeRoutes = require('./routes/employee');
+const salaryRoutes = require('./routes/salary');
+const uphandRoutes = require('./routes/uphand');
 const middleWare = require('./middleware/userType')
 const app = express();
 
@@ -20,6 +22,8 @@ app.use("/index", indexRoutes);
 app.use(middleWare.isAccessable());
 app.use("/company", companyRoutes);
 app.use("/employee", employeeRoutes);
+app.use("/salary", salaryRoutes);
+app.use("/uphand", uphandRoutes);
 app.use("/users", userRoutes);
 
 (async() => await services.connectDB())();
