@@ -6,9 +6,9 @@ const options = {
         createdAt: "createdOn",
         updatedAt: "updatedOn"
     },
-    collection: 'uphands'
+    collection: 'advance-salaries'
 }
-const uphandSchema = new mongoose.Schema({
+const advanceSalarySchema = new mongoose.Schema({
     company: {
         type: mongoose.Schema.Types.ObjectId,
         require: true
@@ -36,48 +36,48 @@ const uphandSchema = new mongoose.Schema({
     }
 }, options);
 
-const Uphand = mongoose.model("Uphand", uphandSchema);
+const AdvanceSalary = mongoose.model("AdvanceSalary", advanceSalarySchema);
 
 module.exports = {
-    model: Uphand,
+    model: AdvanceSalary,
     insertOne: async(payload) => {
         try {
-            return await Uphand.create(payload);
+            return await AdvanceSalary.create(payload);
         } catch (error) {
             throw error;
         }
     }, 
     findAll: async(query, projection) => {
         try {
-            return await Uphand.find(query, projection)
+            return await AdvanceSalary.find(query, projection)
         } catch (error) {
             throw error;
         }
     },
     findOne: async(query, projection) => {
         try {
-            return await Uphand.findOne(query, projection);
+            return await AdvanceSalary.findOne(query, projection);
         } catch (error) {
             throw error;
         }
     }, 
     deleteOne: async(id) => {
         try {
-            return await Uphand.updateOne({_id: ObjectId(id)}, {$set:{isDeleted: true}});
+            return await AdvanceSalary.updateOne({_id: ObjectId(id)}, {$set:{isDeleted: true}});
         } catch (error) {
             throw error;
         }
     }, 
     updateOne: async(id, payload) => {
         try {
-            return await Uphand.updateOne({_id: ObjectId(id)}, {$set:payload});
+            return await AdvanceSalary.updateOne({_id: ObjectId(id)}, {$set:payload});
         } catch (error) {
             throw error;
         }
     }, 
     aggregate: async(pipeline) => {
         try {
-            return await Uphand.aggregate(pipeline);
+            return await AdvanceSalary.aggregate(pipeline);
         } catch (error) {
             throw error;
         }

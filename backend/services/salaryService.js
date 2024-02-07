@@ -1,97 +1,114 @@
 const XLSX = require('xlsx');
+const handlebars = require("handlebars");
+const puppeteer = require('puppeteer');
 const Company = require('../models/company');
 const Employee = require('../models/employee');
-const Uphand = require('../models/uphand');
+const AdvanceSalary = require('../models/advanceSalary');
 const Salary = require('../models/salary');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { validationResult } = require('express-validator');
 const path = require('path');
 const moment = require('moment');
 const fs = require('fs');
+const templateFile = path.join(__dirname + "/../templates/index.html");
+
+const puppeteerOptions = {
+  headless: true,
+  executablePath: null,
+  args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+};
 
 exports.list = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-      return res.status(400).json({ status: 400, message: errors.array(), data: "" });
-  }
-  const company = req.user;
-  const companyQuery = {
-    isDeleted: false,
-    _id: company
-  }
-  const companyDetails = await Company.findOne(companyQuery);
-  if (!companyDetails) {
-      return res.status(400).json({ status: 400, message: "No company found", data: "" })
-  }
-  if (!companyDetails.isActive) {
-    return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
-  }
-  if (!companyDetails.workingYear) {
-      return res.status(400).json({ status: 400, message: "Working-year not found. Please set working year", data: "" })
-  }
-  const row = req.query.row > 0 ? parseInt(req.query.row) : 5;
-  const page = req.query.page > 0 ? parseInt(req.query.page) : 1;
-  const offset = (page-1)*row;
-  const conditions = {
-    isDeleted: false,
-    company: ObjectId(company),
-    workingYear: req.query.working_year ? req.query.working_year : companyDetails.workingYear
-  }
-  const countPipeline = [{
-    $group: {
-      _id: null,
-      totalCount: {
-        $sum: {
-          $cond: [{
-            $and: [{
-              $eq: ["$isDeleted", false]
-            }, {
-              $eq: ["$company", ObjectId(company)]
-            }, {
-              $eq: ["$workingYear", conditions.workingYear]
-            }]
-          }, 1, 0]
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ status: 400, message: errors.array(), data: "" });
+    }
+    const company = req.user;
+    if(!company) {
+      return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+    }
+    const companyQuery = {
+      isDeleted: false,
+      _id: company
+    }
+    const companyDetails = await Company.findOne(companyQuery);
+    if (!companyDetails) {
+        return res.status(404).json({ status: 404, message: "No company found", data: "" })
+    }
+    if (!companyDetails.isActive) {
+      return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
+    }
+    if (!companyDetails.workingYear) {
+        return res.status(400).json({ status: 400, message: "Working-year not found. Please set working year", data: "" })
+    }
+    const row = req.query.row > 0 ? parseInt(req.query.row) : 5;
+    const page = req.query.page > 0 ? parseInt(req.query.page) : 1;
+    const offset = (page-1)*row;
+    const conditions = {
+      isDeleted: false,
+      company: ObjectId(company),
+      workingYear: req.query.working_year ? req.query.working_year : companyDetails.workingYear
+    }
+    const countPipeline = [{
+      $group: {
+        _id: null,
+        totalCount: {
+          $sum: {
+            $cond: [{
+              $and: [{
+                $eq: ["$isDeleted", false]
+              }, {
+                $eq: ["$company", ObjectId(company)]
+              }, {
+                $eq: ["$workingYear", conditions.workingYear]
+              }]
+            }, 1, 0]
+          }
         }
       }
+    }];
+    const totalCount = await Salary.aggregate(countPipeline);
+    if(!totalCount.length) {
+        return res.status(200).json({status:200, message: "No salary list", data: totalCount})   
     }
-  }];
-  const totalCount = await Salary.aggregate(countPipeline);
-  if(!totalCount.length) {
-      return res.status(200).json({status:200, message: "No salary list", data: totalCount})   
+    const totalPage = Math.ceil(totalCount[0].totalCount/row);
+    const pipeline = [{
+      $match: conditions
+    }, {
+      $skip: offset
+    }, {
+      $limit: row
+    }];
+    const salaryList = await Salary.aggregate(pipeline);
+    if(!salaryList.length) {
+        return res.status(200).json({status:200, message: "No salary list", data: salaryList})   
+    }
+    return res.status(200).json({status:200, message: "Salary list", data: {page: page.toString()+" of "+ totalPage.toString(), list:salaryList}});
+  } catch (error) {
+    return res.status(400).json({status:400, message: "Error while getting salary list", data: ""}); 
   }
-  const totalPage = Math.ceil(totalCount[0].totalCount/row);
-  const pipeline = [{
-    $match: conditions
-  }, {
-    $skip: offset
-  }, {
-    $limit: row
-  }];
-  const salaryList = await Salary.aggregate(pipeline);
-  if(!salaryList.length) {
-      return res.status(200).json({status:200, message: "No salary list", data: salaryList})   
-  }
-  return res.status(200).json({status:200, message: "Salary list", data: {page: page.toString()+" of "+ totalPage.toString(), list:salaryList}});
 }
 
 exports.calculate = async (req, res) => {
+  try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`))
         return res.status(400).json({ status: 400, message: errors.array(), data: "" });
     }
     const companyId = req.user;
-    const excelSheetName = path.join(__dirname, `../public/uploads/company/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`);
-    if (!companyId) {
-        return res.status(400).json({ status: 400, message: "CompanyId not found in request", data: "" })
+    if(!companyId) {
+      return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
     }
+    const excelSheetName = path.join(__dirname, `../public/uploads/company/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`);
     const companyQuery = {
         isDeleted: false,
         _id: companyId
     }
     const companyDetails = await Company.findOne(companyQuery);
     if (!companyDetails) {
-        return res.status(400).json({ status: 400, message: "No company found", data: "" })
+        return res.status(404).json({ status: 404, message: "No company found", data: "" })
     }
     if (!companyDetails.isActive) {
         return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
@@ -105,11 +122,11 @@ exports.calculate = async (req, res) => {
     }
     const employeeList = await Employee.findAll(employeeQuery, "_id employeeId wageAmount workingHour overTimeWagePercentage travelAllowance recessTime")
     if (!employeeList) {
-        return res.status(400).json({ status: 400, message: "No employee found", data: "" });
+        return res.status(404).json({ status: 404, message: "No employee found", data: "" });
     }
     const startDate = new Date(moment(req.body.year+"-"+req.body.month).startOf('month').format("YYYY-MM-DD"));
     const endDate = new Date(moment(req.body.year+"-"+req.body.month).endOf('month').format("YYYY-MM-DD"));
-    const uphandPipeline = [
+    const advanceSalaryPipeline = [
       {
         $match: {
           isDeleted: false,
@@ -127,7 +144,7 @@ exports.calculate = async (req, res) => {
         }
       }
     ]
-    const employeeUphands = await Uphand.aggregate(uphandPipeline);
+    const employeeAdvanceSalary = await AdvanceSalary.aggregate(advanceSalaryPipeline);
     const headerMapping = {
         "EMPLOYEE_ID": 'emp_id',
         "DATE": 'date',
@@ -164,13 +181,13 @@ exports.calculate = async (req, res) => {
     employeeData.shift();
     const salaryArray = [];
     for (const employee of employeeList) {
-      const uphandList = [];
-      for (const uphand of employeeUphands) {
-        if (employee._id.toString() == uphand.employee.toString()) { 
-          uphandList.push({date: moment(uphand.date).format("DD-MM-YYYY"), amount: uphand.amount, _id: uphand._id}) 
+      const advanceSalaryList = [];
+      for (const advanceSalary of employeeAdvanceSalary) {
+        if (employee._id.toString() == advanceSalary.employee.toString()) { 
+          advanceSalaryList.push({date: moment(advanceSalary.date).format("DD-MM-YYYY"), amount: advanceSalary.amount, _id: advanceSalary._id}) 
         }
       }
-      salaryArray.push({"employeeId": employee["employeeId"], "_id": employee["_id"],"fixedSalary": employee["wageAmount"], "fixedWorkingHour": employee["workingHour"],"overTimeWagePercentage": employee["overTimeWagePercentage"], "travelAllowance": employee["travelAllowance"], "recessTime":employee["recessTime"], "uphandList": uphandList, "leaveList": []})
+      salaryArray.push({"employeeId": employee["employeeId"], "_id": employee["_id"],"fixedSalary": employee["wageAmount"], "fixedWorkingHour": employee["workingHour"],"overTimeWagePercentage": employee["overTimeWagePercentage"], "travelAllowance": employee["travelAllowance"], "recessTime":employee["recessTime"], "advanceSalaryList": advanceSalaryList, "leaveList": []})
     }
     for (const data of salaryArray) {
         for (const employee of employeeData) {
@@ -225,12 +242,12 @@ exports.calculate = async (req, res) => {
         }
         delete data["inCompleteHour"]
         data["extraHour"] >= 2 ? data["extraHourSalary"] = (data["extraHour"] / 8) * data["overTimeWagePercentage"] * data["fixedSalary"]: delete data["extraHour"];
-        if (data["uphandList"]) {
+        if (data["advanceSalaryList"]) {
           let total = 0;
-          for (const uphand of data["uphandList"]) {
-            total += uphand.amount
+          for (const advanceSalary of data["advanceSalaryList"]) {
+            total += advanceSalary.amount
           }
-          data["totalUphand"] = total;
+          data["totalAdvanceSalary"] = total;
         }
         if(data["travelDays"] !== data["totalWorkingDays"]) {
           data["travelDays"] = data["totalWorkingDays"];
@@ -238,7 +255,7 @@ exports.calculate = async (req, res) => {
         data["totalOther"] = data["totalWorkingDays"] * req.body.other_expense;
         data["regularSalary"] = data["totalWorkingDays"] * data["fixedSalary"];
         data["travelFair"] = data["travelDays"] * data["travelAllowance"];
-        data["finalSalary"] = (data["regularSalary"] + data["travelFair"] + (data?.extraHourSalary ? data["extraHourSalary"] : 0)) - (data["totalOther"] + data["totalUphand"])
+        data["finalSalary"] = (data["regularSalary"] + data["travelFair"] + (data?.extraHourSalary ? data["extraHourSalary"] : 0)) - (data["totalOther"] + data["totalAdvanceSalary"])
         delete data["fixedSalary"]; 
         delete data["fixedWorkingHour"]; 
         delete data["overTimeWagePercentage"]; 
@@ -254,11 +271,11 @@ exports.calculate = async (req, res) => {
         totalWorkingDays: data.totalWorkingDays,
         totalOverTimePeriod: data?.extraHour,
         OverTimeSalary: data?.extraHourSalary,
-        totalAdvanceSalary: data?.totalUphand,
+        totalAdvanceSalary: data?.totalAdvanceSalary,
         totalOtherExpenseByCompany: data?.totalOther,
         totalTravelAllowance: data?.travelFair,
         finalSalary: data?.finalSalary,
-        advanceList: data?.uphandList,
+        advanceList: data?.advanceSalaryList,
         absent: data?.leaveList,
       }
       salary.push(obj);
@@ -275,56 +292,114 @@ exports.calculate = async (req, res) => {
       return res.status(400).json({status:400, message: "Error while calculating employees salaries.", data: ""}) 
     }
     return res.status(200).json({ status: 200, message: "Employees salaries calculated successfully.", data: salaries })
+  } catch (error) {
+    return res.status(400).json({status:400, message: "Error while calculating salary", data: ""}); 
+  }
 }
 
 exports.report = async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-      return res.status(400).json({ status: 400, message: errors.array(), data: "" });
-  }
-  const company = req.user;
-  const companyQuery = {
-    isDeleted: false,
-    _id: company
-  }
-  const companyDetails = await Company.findOne(companyQuery);
-  if (!companyDetails) {
-    return res.status(400).json({ status: 400, message: "No company found", data: "" })
-  }
-  if (!companyDetails.isActive) {
-    return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
-  }
-  const query = {
-    isDeleted: false,
-    _id: req.params.salaryID,
-    company: company
-  }
-  const salaryDetail = await Salary.findOne(query, "workingYear month year salaryDetails");
-  if(!salaryDetail) {
-    return res.status(200).json({ status: 200, message: "No salary detail found", data: ""});
-  }
-  const salaryData = [];
-  for (const data of salaryDetail.salaryDetails) {
-    const obj = {
-      "EMPLOYEE_ID": data.employee,
-      "WORKING_DAYS": data.totalWorkingDays,
-      "OVER_TIME_PERIOD": data?.totalOverTimePeriod ? data.totalOverTimePeriod : "",
-      "OVER_TIME_SALARY": data?.OverTimeSalary ? data.OverTimeSalary : "",
-      "ADVANCE_SALARY": data?.totalAdvanceSalary ? data.totalAdvanceSalary : "",
-      "COMPANY_EXPENSE": data?.totalOtherExpenseByCompany ? data.totalOtherExpenseByCompany : "",
-      "TRAVEL_ALLOWANCE": data?.totalTravelAllowance ? data.totalTravelAllowance : "",
-      "FINAL_SALARY": data.finalSalary,
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ status: 400, message: errors.array(), data: "" });
     }
-    salaryData.push(obj);
+    const company = req.user;
+    if (!company) {
+      return res.status(400).json({ status: 400, message: "CompanyId not found in request", data: "" })
+    }
+    const companyQuery = {
+      isDeleted: false,
+      _id: company
+    }
+    const companyDetails = await Company.findOne(companyQuery);
+    if (!companyDetails) {
+      return res.status(404).json({ status: 404, message: "No company found", data: "" })
+    }
+    if (!companyDetails.isActive) {
+      return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
+    }
+    const pipeline = [{
+      $match: {
+        isDeleted: false,
+        _id: ObjectId(req.params.salaryID),
+        company: ObjectId(company)
+      }
+    }, {
+      $lookup: {
+        from: "employees",
+        let: {"employee": "$salaryDetails.employeeId"},
+        pipeline: [{
+          $match: {
+            $expr: {
+              $and: [{
+                $in: ["$_id","$$employee"]
+              }]
+            }
+          }
+        }, {
+          $project: {
+            name:1,
+            mobile: 1
+          }
+        }],
+        as: "employeeData" 
+      }
+    }];
+    const salaryDetail = await Salary.aggregate(pipeline);
+    if(!salaryDetail) {
+      return res.status(200).json({ status: 200, message: "No salary detail found", data: ""});
+    }
+    const salaryData = [];
+    for (const data of salaryDetail[0].salaryDetails) {
+      const obj = {
+        "EMPLOYEE_ID": data.employee,
+        "WORKING_DAYS": data.totalWorkingDays,
+        "OVER_TIME_PERIOD": data?.totalOverTimePeriod ? data.totalOverTimePeriod : "",
+        "OVER_TIME_SALARY": data?.OverTimeSalary ? data.OverTimeSalary : "",
+        "ADVANCE_SALARY": data?.totalAdvanceSalary ? data.totalAdvanceSalary : "",
+        "COMPANY_EXPENSE": data?.totalOtherExpenseByCompany ? data.totalOtherExpenseByCompany : "",
+        "TRAVEL_ALLOWANCE": data?.totalTravelAllowance ? data.totalTravelAllowance : "",
+        "FINAL_SALARY": data.finalSalary,
+      }
+      salaryData.push(obj);
+    }
+    if(req.params.fileType == "PDF") {
+      const pdfData = {
+        company: companyDetails.companyName.toUpperCase(),
+        month: salaryDetail[0].month,
+        year: salaryDetail[0].year,
+        salaryList: salaryData,
+        employeeData: salaryDetail[0].employeeData
+      }
+      const browser = await puppeteer.launch(puppeteerOptions);
+      const page = await browser.newPage();
+      const labelHtml = fs.readFileSync(templateFile, 'utf8');
+      const template = handlebars.compile(labelHtml);
+      const html = template(pdfData);
+      await page.setContent(html, {
+          waitUntil: ['domcontentloaded', 'networkidle0', 'load']
+      })
+      const pdfBuffer = await page.pdf({
+          format: 'A4',
+      });
+      res.setHeader("Content-Disposition", `attachment; filename=SALARY_REPORT ${salaryDetail[0].month}-${salaryDetail[0].year}.pdf`);
+      res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+      res.set("Content-Type", "application/pdf");
+      await browser.close();
+      res.send(pdfBuffer);
+    }
+    if (req.params.fileType == "XLSX") {
+      const sheetData = XLSX.utils.json_to_sheet(salaryData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, sheetData, `SALARY_${salaryDetail[0].month}`);
+      const sheet=XLSX.write(workbook,{bookType: "xlsx",type:"buffer"});
+      res.setHeader("Content-Disposition", `attachment; filename=SALARY_REPORT ${salaryDetail[0].month}-${salaryDetail[0].year}.xlsx`);
+      res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+      res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.send(sheet);
+    }
+  } catch (error) {
+    return res.status(400).json({status:400, message: "Error while generating salary report", data: ""}); 
   }
-  const sheetData = XLSX.utils.json_to_sheet(salaryData);
-  const html = XLSX.utils.sheet_to_html(sheetData)
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, sheetData, `SALARY_${salaryDetail.month}`);
-  const sheet=XLSX.write(workbook,{bookType: "xlsx",type:"buffer"});
-  res.setHeader("Content-Disposition", `attachment; filename=SALARY_REPORT ${salaryDetail.month}-${salaryDetail.year}.xlsx`);
-  res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-  res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  res.send(sheet);
-  // res.status(200).json({ status: 200, message: "Salary detail found", data: salaryDetail});
+  
 }

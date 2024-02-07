@@ -11,33 +11,17 @@ exports.list = async(req, res) => {
             return res.status(400).json({status:400, message:errors.array(), data:""});
         }
         const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
+        const companyDetails = await Company.findOne(query);
+        if(!companyDetails) {
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
+        }
         const conditions = {
             isDeleted: false,
             company: ObjectId(company)
         }    
-        const sort = {};
-        if (req.query.sort && req.query.sort_index) {
-            sort[req.query.sort] = req.query.sort_index === "asc" ? 1 : -1;
-        }
-        else if (req.query.sort) {
-            sort[req.query.sort] = 1;
-        }
-        else if (req.query.sort_index) {
-            sort["name"] = req.query.sort_index === "asc" ? 1 : -1;
-        }
-        else {
-            sort["name"] = 1;
-        }
-        if (req.query.search) {
-            const json = JSON.parse(req.query.search);
-            (json.field && json.value) ? conditions[json?.field] = {
-                "$regex": json?.value,
-                "$options": "i"
-            } : "";
-        }
-        const row = req.query.row > 0 ? parseInt(req.query.row) : 5;
-        const page = req.query.page > 0 ? parseInt(req.query.page) : 1;
-        const offset = (page-1)*row;
         const countPipeline = [{
             $group: {
                 _id: null,
@@ -57,6 +41,27 @@ exports.list = async(req, res) => {
                 }
             }
         }];
+        if (req.query.search) {
+            const json = JSON.parse(req.query.search);
+            if (json.field && json.value) {
+                conditions[json.field] = {
+                    "$regex": json.value,
+                    "$options": "i"
+                };
+                countPipeline[0].$group.totalCount.$sum.$cond[0].$and.push({
+                    $eq: [{
+                        $regexMatch: {
+                            input: `$${json.field}`,
+                            regex: json.value,
+                            options: "i"
+                        }
+                    }, true]
+                });
+            }
+        }
+        const row = req.query.row > 0 ? parseInt(req.query.row) : 5;
+        const page = req.query.page > 0 ? parseInt(req.query.page) : 1;
+        const offset = (page-1)*row;
         const totalCount = await Employee.aggregate(countPipeline);
         if(!totalCount.length) {
             return res.status(200).json({status:200, message: "No employees list", data: totalCount})   
@@ -64,8 +69,6 @@ exports.list = async(req, res) => {
         const totalPage = Math.ceil(totalCount[0].totalCount/row);
         const pipeline = [{
             $match: conditions
-        }, {
-            $sort: sort
         }, {
             $skip: offset,
         }, {
@@ -89,16 +92,19 @@ exports.add = async(req, res) => {
             return res.status(400).json({status:400, message:errors.array(), data:""});
         }
         const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
         const query = {
             isDeleted: false,
             _id: company
         }
         const companyExist = await Company.findOne(query, "companyCode");
         if(!companyExist) {
-            return res.status(400).json({status:400, message: "No company found", data: ""}) 
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
         }
         if(!companyExist.companyCode) {
-            return res.status(400).json({status:400, message: "Company code not found. Set company code.", data: ""}) 
+            return res.status(404).json({status:404, message: "Company code not found. Set company code.", data: ""}) 
         }
         const employeeQuery = {
             isDeleted: false,
@@ -147,6 +153,13 @@ exports.edit = async(req, res) => {
             return res.status(400).json({status:400, message:errors.array(), data:""});
         }
         const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
+        const companyDetails = await Company.findOne({isDeleted: false, _id: company});
+        if(!companyDetails) {
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
+        }
         const query = {
             isDeleted: false,
             _id: ObjectId(req.params.employeeID),
@@ -154,7 +167,7 @@ exports.edit = async(req, res) => {
         }
         const employeeExist = await Employee.findOne(query);
         if(!employeeExist) {
-            return res.status(400).json({status:400, message: "Error while updating employee", data: ""}) 
+            return res.status(404).json({status:404, message: "Employee not found", data: ""}) 
         }
         const payload = {};
         if(req.body.name) {
@@ -205,6 +218,13 @@ exports.detail = async(req, res) => {
             return res.status(400).json({status:400, message:errors.array(), data:""});
         }
         const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
+        const companyDetails = await Company.findOne({isDeleted: false, _id: company});
+        if(!companyDetails) {
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
+        }
         const query = {
             isDeleted: false,
             _id: ObjectId(req.params.employeeID),
@@ -212,7 +232,7 @@ exports.detail = async(req, res) => {
         }
         const employeeExist = await Employee.findOne(query);
         if(!employeeExist) {
-            return res.status(400).json({status:400, message: "Error getting employee detail", data: ""}) 
+            return res.status(404).json({status:404, message: "Employee not found", data: ""}) 
         }
         return res.status(200).json({status:200, message: "Employee details", data: employeeExist});
 
@@ -228,6 +248,13 @@ exports.delete = async(req, res) => {
             return res.status(400).json({status:400, message:errors.array(), data:""});
         }
         const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
+        const companyDetails = await Company.findOne({isDeleted: false, _id: company});
+        if(!companyDetails) {
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
+        }
         const query = {
             isDeleted: false,
             _id: ObjectId(req.params.employeeID),
@@ -235,7 +262,7 @@ exports.delete = async(req, res) => {
         }
         const employeeExist = await Employee.findOne(query);
         if(!employeeExist) {
-            return res.status(400).json({status:400, message: "Error while deleteing employee", data: ""}) 
+            return res.status(404).json({status:404, message: "Employee not found", data: ""}) 
         }
         const payload = {
             isDeleted: true
@@ -257,6 +284,13 @@ exports.appraisal = async(req, res) => {
             return res.status(400).json({status:400, message:errors.array(), data:""});
         }
         const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
+        const companyDetails = await Company.findOne({isDeleted: false, _id: company});
+        if(!companyDetails) {
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
+        }
         const query = {
             isDeleted: false,
             _id: ObjectId(req.params.employeeID),
@@ -264,7 +298,7 @@ exports.appraisal = async(req, res) => {
         }
         const employeeExist = await Employee.findOne(query);
         if(!employeeExist) {
-            return res.status(400).json({status:400, message: "Error while adding employee appraisal", data: ""}) 
+            return res.status(404).json({status:404, message: "Employee not found", data: ""}) 
         } 
         const newSalary = (req.body.appraisal_type) === "%" ? parseInt(employeeExist.wageAmount) + ((parseInt(employeeExist.wageAmount) * parseInt(req.body.appraisal_value)) / 100) : parseInt(employeeExist.wageAmount) + parseInt(req.body.appraisal_value);
         const payload = {
@@ -287,13 +321,20 @@ exports.appraisalAll = async(req, res) => {
             return res.status(400).json({status:400, message:errors.array(), data:""});
         }
         const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
+        const companyDetails = await Company.findOne({isDeleted: false, _id: company});
+        if(!companyDetails) {
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
+        }
         const query = {
             isDeleted: false,
             company: ObjectId(company)
         }
         const employeeList = await Employee.findAll(query, "_id wageAmount");
         if(!employeeList) {
-            return res.status(400).json({status:400, message: "Error while adding appraisal for all employee", data: ""}) 
+            return res.status(404).json({status:404, message: "Employees not found", data: ""}) 
         } 
         let newSalaryArray = [];
         switch (req.body.appraisal_type) {

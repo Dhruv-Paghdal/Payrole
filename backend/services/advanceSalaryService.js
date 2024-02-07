@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator');
 const moment = require('moment');
 const ObjectId = require('mongoose').Types.ObjectId;
-const Uphand = require('../models/uphand');
+const AdvanceSalary = require('../models/advanceSalary');
 const Employee = require('../models/employee');
 const Company = require('../models/company');
 
@@ -12,6 +12,13 @@ exports.list = async(req, res) => {
             return res.status(400).json({status:400, message:errors.array(), data:""});
         }
         const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
+        const companyDetails = await Company.findOne({isDeleted: false, _id: company});
+        if(!companyDetails) {
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
+        }
         const searchJSON = req.query.search && JSON.parse(req.query.search);
         const startDate = searchJSON?.start ? new Date(searchJSON.start) : new Date(moment().startOf('month').format("YYYY-MM-DD"));
         const endDate = searchJSON?.end ? new Date(searchJSON.end) : new Date(moment().endOf('month').format("YYYY-MM-DD"));
@@ -167,19 +174,19 @@ exports.list = async(req, res) => {
                 }, true]
             })
         }
-        const totalCount = await Uphand.aggregate(countPipeline);
+        const totalCount = await AdvanceSalary.aggregate(countPipeline);
         if(!totalCount.length) {
-            return res.status(200).json({status:200, message: "No employees uphand list", data: totalCount})   
+            return res.status(200).json({status:200, message: "No advance salary list", data: totalCount})   
         }
         const totalPage = Math.ceil(totalCount[0].totalCount/row);
         pipeline.push(filter, lookup, searchFilter, {$skip: offset}, {$limit: row});
-        const uphandList = await Uphand.aggregate(pipeline);
-        if(!uphandList.length) {
-            return res.status(200).json({status:200, message: "No employee uphand list", data: uphandList})   
+        const advanceSalaryList = await AdvanceSalary.aggregate(pipeline);
+        if(!advanceSalaryList.length) {
+            return res.status(200).json({status:200, message: "No advance salary list", data: advanceSalaryList})   
         }
-        return res.status(200).json({status:200, message: "Employee uphand list successfully", data: {page: page.toString()+" of "+ totalPage.toString(), list:uphandList}}) 
+        return res.status(200).json({status:200, message: "Advance salary list successfully", data: {page: page.toString()+" of "+ totalPage.toString(), list:advanceSalaryList}}) 
     } catch (error) {
-        return res.status(400).json({status:400, message: "Error while getting uphand list", data: ""}) 
+        return res.status(400).json({status:400, message: "Error while getting advance salary list", data: ""}) 
     }
 }
 
@@ -190,13 +197,16 @@ exports.add = async(req, res) => {
             return res.status(400).json({status:400, message:errors.array(), data:""});
         }
         const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
         const query = {
             isDeleted: false,
             _id: company
         }
         const companyExist = await Company.findOne(query);
-        if(!companyExist) {
-            return res.status(400).json({status:400, message: "No company found", data: ""}) 
+        if (!companyExist) {
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
         }
         if (!companyExist.isActive) {
             return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
@@ -208,7 +218,7 @@ exports.add = async(req, res) => {
         }
         const employeeExist = await Employee.findOne(employeeQuery);
         if(!employeeExist) {
-            return res.status(400).json({status:400, message: "Error while adding uphand", data: ""}) 
+            return res.status(404).json({status:404, message: "Employee not found", data: ""}) 
         }
         const payload = {
             company: company,
@@ -217,13 +227,13 @@ exports.add = async(req, res) => {
             type: req.body.type,
             date: req.body.date,
         }
-        const uphand = await Uphand.insertOne(payload);
-        if(!uphand) {
-            return res.status(400).json({status:400, message: "Error while adding uphand", data: ""}) 
+        const advanceSalary = await AdvanceSalary.insertOne(payload);
+        if(!advanceSalary) {
+            return res.status(400).json({status:400, message: "Error while adding advance salary", data: ""}) 
         }
-        return res.status(200).json({status:200, message: "Employee uphand addedd successfully", data: ""}) 
+        return res.status(200).json({status:200, message: "Employee advance salary addedd successfully", data: ""}) 
     } catch (error) {
-        return res.status(400).json({status:400, message: "Error while adding uphand", data: ""}) 
+        return res.status(400).json({status:400, message: "Error while adding employee advance salary", data: ""}) 
     }
 }
 
@@ -233,13 +243,28 @@ exports.edit = async(req, res) => {
         if (!errors.isEmpty()) {
             return res.status(400).json({status:400, message:errors.array(), data:""});
         }
+        const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
+        const companyQuery = {
+            isDeleted: false,
+            _id: company
+        }
+        const companyExist = await Company.findOne(companyQuery);
+        if (!companyExist) {
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
+        }
+        if (!companyExist.isActive) {
+            return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
+        }
         const query = {
-            _id : req.params.uphandID,
+            _id : req.params.advanveSalaryID,
             isDeleted: false,
         }
-        const uphandExist = await Uphand.findOne(query);
-        if(!uphandExist) {
-            return res.status(400).json({status:400, message: "Error while updating employee uphand", data: ""}) 
+        const advanceSalaryExist = await AdvanceSalary.findOne(query);
+        if(!advanceSalaryExist) {
+            return res.status(404).json({status:404, message: "Employee advance salary not found", data: ""}) 
         }
         const payload = {};
         if(req.body.amount) {
@@ -251,12 +276,12 @@ exports.edit = async(req, res) => {
         if(req.body.date) {
             payload["date"] = req.body.date;
         }
-        const uphandUpdate = await Uphand.updateOne(req.params.uphandID, payload);
-        if(!uphandUpdate.modifiedCount) {
-            return res.status(400).json({status:400, message: "Error while updating employee", data: uphandUpdate}) 
+        const advanceSalaryUpdate = await AdvanceSalary.updateOne(req.params.advanveSalaryID, payload);
+        if(!advanceSalaryUpdate.modifiedCount) {
+            return res.status(400).json({status:400, message: "Error while updating employee advance salary", data: advanceSalaryUpdate}) 
         }
-        return res.status(202).json({status:202, message: "Employee uphand updated successfully", data: ""}) 
+        return res.status(202).json({status:202, message: "Employee advance salary updated successfully", data: ""}) 
     } catch (error) {
-        return res.status(400).json({status:400, message: "Error while updating employee uphand", data: ""}) 
+        return res.status(400).json({status:400, message: "Error while updating employee advance salary", data: ""}) 
     }
 }

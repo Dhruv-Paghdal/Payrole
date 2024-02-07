@@ -9,35 +9,6 @@ module.exports = {
             errorMessage: "Password cannot be empty",  
         }
     },
-    addUser: {
-        mobile: {
-            notEmpty: true,
-            errorMessage: "Mobile number cannot be empty",
-            isLength:{
-                options: { min: 10 , max : 10},
-                errorMessage: "Enter a valid mobile number"   
-            },
-        },
-        email: {
-            optional: {
-                checkFalsy: true,
-            },
-            isEmail: true,
-            errorMessage: "Enter a valid email address",
-        },
-        name: {
-            notEmpty: true,
-            errorMessage: "Name cannot be empty",
-            isLength:{
-                options: { min: 3 , max : 10},
-                errorMessage: "Name must be greater then 3 character"   
-            },
-        },
-        password: {
-            notEmpty: true,
-            errorMessage: "Password cannot be empty",  
-        }
-    },
     addEmployee: {
         name:{
             notEmpty: true,
@@ -107,28 +78,28 @@ module.exports = {
             },
         }
     },
-    addUphand: {
+    addAdvanceSalary: {
         employee: {
             notEmpty: true,
             errorMessage: "Employee is required",
         },
         amount: {
             notEmpty: true,
-            errorMessage: "Uphand amount is required",
+            errorMessage: "Advance salary amount is required",
             isInt: {
                 options: {
                     gt: 0
                 },
-                errorMessage: "AppraiUphand amount must be integer and greater than 0."
+                errorMessage: "Advance salary amount must be integer and greater than 0."
             },
         },
         type: {
             notEmpty: true,
-            errorMessage: "Uphand type is required",
+            errorMessage: "Advance salary type is required",
         },
         date: {
             notEmpty: true,
-            errorMessage: "Uphand date is required",
+            errorMessage: "Advance salary date is required",
         }
     },
     calculateSalary: {

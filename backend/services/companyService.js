@@ -4,7 +4,7 @@ exports.profile = async(req, res) => {
     try {
         const companyId = req.user;
         if(!companyId) {
-            return res.status(400).json({status:400, message: "CompanyId not found in request", data: ""}) 
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
         }
         const query = {
             isDeleted: false,
@@ -12,7 +12,7 @@ exports.profile = async(req, res) => {
         }
         const companyDetails = await Company.findOne(query, "userName password startDate endDate subscriptionHistory mobile companyName companyCode companyAddress ownerDetail isActive workingYear weekOffDay");
         if(!companyDetails) {
-            return res.status(400).json({status:400, message: "No company found", data: ""}) 
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
         }
         return res.status(200).json({status: 200, message: "Company details found", data: companyDetails})
     } catch (error) {
@@ -24,7 +24,7 @@ exports.edit = async(req, res) => {
     try {
         const companyId = req.user;
         if(!companyId) {
-            return res.status(400).json({status:400, message: "CompanyId not found in request", data: ""}) 
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
         }
         const query = {
             isDeleted: false,
@@ -32,7 +32,7 @@ exports.edit = async(req, res) => {
         }
         const companyDetails = await Company.findOne(query);
         if(!companyDetails) {
-            return res.status(400).json({status:400, message: "No company found", data: ""}) 
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
         }
         const payload = {}
         if(req.body.company_name) {
