@@ -1,0 +1,17 @@
+input[type="text"]:focus, input[type="password"]:focus, input[type="date"]:focus, input[type="email"]:focus, input[type="checkbox"]:focus, input[type="file"]:focus, input[type="tel"]:focus, input[type="radio"]:focus, .form-select:focus, button:focus, a:focus{
+    border-color: rgba(0, 0, 0, 0.116);
+    outline: 0;
+    box-shadow: none !important;
+}
+
+.active{
+    color: #FFFFFF !important;
+}
+
+p{
+    color: #989797;
+}
+
+@import 'custom';
+@import '~bootstrap/scss/bootstrap';
+
