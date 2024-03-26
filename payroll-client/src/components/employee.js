@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useState, useContext} from 'react';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Form from 'react-bootstrap/Form';
@@ -7,15 +7,12 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import Pagination from 'react-bootstrap/Pagination';
 import Table from 'react-bootstrap/Table';
 import AppModal from './modal';
+import PayrollContext from '../context/payrollContext';
+import { modalTypeEnum } from '../constValue';
 
-
-const Employee = (props) => {
-    const modalShow = props.modalShow;
-    const setModalShow = props.setModalShow;
-    const modalType = props.modalType;
-    const setModalType = props.setModalType;
-    const modalData = props.modalData;
-    const setModalData = props.setModalData;
+const Employee = () => {
+    const context = useContext(PayrollContext);
+    const { setModalShow, setModalType, setModalData} = context;
     const data = [
         {
           "_id": "65b4b4703295f68bef8b023a",
@@ -287,16 +284,16 @@ const Employee = (props) => {
     const maxLimit = 10;
     const [curr, set_Curr] = useState(1);
     const handelModal = (type, data) => {
-        if(type === "editEmployee"){
+        if(type === modalTypeEnum.edit_employee){
             setModalData(data)
         }
-        if(type === "deleteEmployee"){
+        if(type === modalTypeEnum.delete_employee){
             setModalData({
                 employeeId: data.employeeId,
                 _id: data._id
             })
         }
-        if(type === "incrementEmployee"){
+        if(type === modalTypeEnum.employee_increment){
             setModalData({
                 employeeId: data.employeeId,
                 name: data.name,
@@ -384,7 +381,7 @@ const Employee = (props) => {
                     <p>Here are your all employees</p>
                 </div>
                 <div>
-                    <Button className='w-100' onClick={()=>{handelModal("addEmployee")}}><PlusLg /> Add Employee</Button>
+                    <Button className='w-100' onClick={()=>{handelModal(modalTypeEnum.add_employee)}}><PlusLg /> Add Employee</Button>
                 </div>
             </div>
             <hr />
@@ -403,8 +400,8 @@ const Employee = (props) => {
                     </div>
                     <div>
                         <ButtonGroup>
-                            <Button onClick={()=>handelModal('searchFilter')}><Sliders /> Filter</Button>
-                            <Button onClick={()=>handelModal('incrementAllEmployee')}><CashStack /> Increment</Button>
+                            <Button onClick={()=>handelModal(modalTypeEnum.search_filter)}><Sliders /> Filter</Button>
+                            <Button onClick={()=>handelModal(modalTypeEnum.all_employee_increment)}><CashStack /> Increment</Button>
                         </ButtonGroup>
                         {/* <ButtonGroup>
                         </ButtonGroup> */}
@@ -440,7 +437,7 @@ const Employee = (props) => {
                            <CurrencyRupee /> {data.wageAmount.toLocaleString()}
                         </td>
                         <td>
-                            <InfoCircle className='hoverEffect' onClick={()=>{handelModal("employeeDetail")}}/>
+                            <InfoCircle className='hoverEffect' onClick={()=>{handelModal(modalTypeEnum.employee_detail)}}/>
                         </td>
                         <td>
                         <Dropdown>
@@ -449,9 +446,9 @@ const Employee = (props) => {
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                             <Dropdown.Header>Action</Dropdown.Header>
-                            <Dropdown.Item onClick={()=>handelModal("editEmployee", data)}><PencilSquare color='#0d6efd' /> Edit</Dropdown.Item>
-                            <Dropdown.Item onClick={()=>handelModal("deleteEmployee", data)}><Trash color='#dc3545'/> Delete</Dropdown.Item>
-                            <Dropdown.Item onClick={()=>handelModal("incrementEmployee", data)}><CashStack color='#198754'/> Increment</Dropdown.Item>
+                            <Dropdown.Item onClick={()=>handelModal(modalTypeEnum.edit_employee, data)}><PencilSquare color='#0d6efd' /> Edit</Dropdown.Item>
+                            <Dropdown.Item onClick={()=>handelModal(modalTypeEnum.delete_employee, data)}><Trash color='#dc3545'/> Delete</Dropdown.Item>
+                            <Dropdown.Item onClick={()=>handelModal(modalTypeEnum.employee_increment, data)}><CashStack color='#198754'/> Increment</Dropdown.Item>
                         </Dropdown.Menu>
                         </Dropdown>
                         </td>
@@ -462,7 +459,7 @@ const Employee = (props) => {
                 </div>
                 <footer className='d-flex justify-content-end'>
                     <Pagination className='mb-0'>{showPageItemsFunction()}</Pagination>
-                    <AppModal modalShow={modalShow} setModalShow={setModalShow} modalData={modalData} modalType={modalType}/>
+                    <AppModal />
                 </footer>
             </div>
 

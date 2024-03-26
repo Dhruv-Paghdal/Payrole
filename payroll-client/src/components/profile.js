@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import Button from 'react-bootstrap/Button';
 import {PersonGear} from 'react-bootstrap-icons';
 import Row from 'react-bootstrap/esm/Row';
@@ -6,14 +6,12 @@ import Col from 'react-bootstrap/esm/Col';
 import Form from 'react-bootstrap/Form';
 import moment from 'moment';
 import AppModal from './modal';
+import PayrollContext from '../context/payrollContext';
+import { modalTypeEnum } from '../constValue';
 
-const Profile = (props) => {
-    const modalShow = props.modalShow;
-    const setModalShow = props.setModalShow;
-    const modalType = props.modalType;
-    const setModalType = props.setModalType;
-    const modalData = props.modalData;
-    const setModalData = props.setModalData;
+const Profile = () => {
+    const context = useContext(PayrollContext);
+    const { setModalShow, setModalType, setModalData} = context;
     const data = {
         "companyAddress": {
           "addressLine": "Plot. No. 3, Krishna-1 Industrial Estate",
@@ -79,7 +77,7 @@ const Profile = (props) => {
                 <p>Here's your profile</p>
             </div>
             <div>
-              <Button className='w-100' onClick={()=>handelModal("editCompanyProfile")}><PersonGear /> Edit profile</Button>
+              <Button className='w-100' onClick={()=>handelModal(modalTypeEnum.edit_company_profile)}><PersonGear /> Edit profile</Button>
             </div>
         </div>
         <hr />
@@ -152,7 +150,7 @@ const Profile = (props) => {
             </Col>
           </Row>
         </div>
-        <AppModal modalShow={modalShow} setModalShow={setModalShow} modalData={modalData} modalType={modalType}/>
+        <AppModal />
       </div>
     </>
   )
@@ -160,5 +158,3 @@ const Profile = (props) => {
 
 export default Profile
 
-
-// set height in css

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import {CalendarCheck, InfoCircle, ThreeDots, CurrencyRupee, FiletypeXlsx, FiletypePdf} from 'react-bootstrap-icons';
@@ -6,15 +6,13 @@ import Pagination from 'react-bootstrap/Pagination';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Table from 'react-bootstrap/Table';
 import AppModal from './modal';
+import { modalTypeEnum } from '../constValue';
+import PayrollContext from '../context/payrollContext';
 import './css/dashboard.css';
 
-const Dashboard = (props) => {
-    const modalShow = props.modalShow;
-    const setModalShow = props.setModalShow;
-    const modalType = props.modalType;
-    const setModalType = props.setModalType;
-    const modalData = props.modalData;
-    const setModalData = props.setModalData;
+const Dashboard = () => {
+    const context = useContext(PayrollContext);
+    const { setModalShow, setModalType, setModalData} = context;
     const salaryList = [
         {
         "_id": "65bcbcbc025ee6dfbe394212",
@@ -2864,13 +2862,13 @@ const Dashboard = (props) => {
     const [curr, set_Curr] = useState(1);  
     const [data, setData] = useState(salaryList); 
     const handelModal = (type, id) => {
-      if(type === "salaryDetail"){
+      if(type === modalTypeEnum.detail){
         const modalData = data.find((ele)=>{return(ele._id === id)});
-        setModalType("detail")
+        setModalType(modalTypeEnum.detail)
         setModalData(modalData);
       }
       else {
-        setModalType("attendance")
+        setModalType(modalTypeEnum.attendance)
       }
       setModalShow(true);
     }
@@ -2951,7 +2949,7 @@ const Dashboard = (props) => {
             <p>Here's your report of 2023-24</p>
         </div>
         <div>
-            <Button className='w-100' onClick={()=>{handelModal("downloadSheet")}}><CalendarCheck /> Attendance Sheet</Button>
+            <Button className='w-100' onClick={()=>{handelModal(modalTypeEnum.attendance)}}><CalendarCheck /> Attendance Sheet</Button>
         </div>
       </div>
       <hr />
@@ -3010,7 +3008,7 @@ const Dashboard = (props) => {
                       })()
                     }
                   </td>
-                  <td><InfoCircle className='hoverEffect' onClick={()=>{ handelModal("salaryDetail", data._id)}}/></td>
+                  <td><InfoCircle className='hoverEffect' onClick={()=>{ handelModal(modalTypeEnum.detail, data._id)}}/></td>
                   <td>
                     <Dropdown>
                       <Dropdown.Toggle className='p-0 m-0'style={{backgroundColor: "transparent", borderColor: "transparent", color: "#000000"}}>
@@ -3030,7 +3028,7 @@ const Dashboard = (props) => {
         </div>
         <footer className='d-flex justify-content-end'>
           <Pagination className='mb-0'>{showPageItemsFunction()}</Pagination>
-          <AppModal modalShow={modalShow} setModalShow={setModalShow} modalData={modalData} modalType={modalType}/>
+          <AppModal />
         </footer>
       </div>
     </div>

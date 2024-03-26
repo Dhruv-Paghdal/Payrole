@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Container from 'react-bootstrap/Container';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
 import {Grid1x2, Coin, People, Person, BoxArrowLeft} from 'react-bootstrap-icons';
+import { NavLink } from 'react-router-dom';
 import './css/navbar.css';
 
 const AppNavbar = () => {
@@ -16,19 +17,19 @@ const AppNavbar = () => {
           <Navbar.Collapse id="basic-navbar-nav">
           <Nav variant="pills" className="me-auto mt-2">
               <Nav.Item className='mb-2'>
-                <Nav.Link href=""  className='ps-2'><Grid1x2/> <span className='ps-2'>Dashboard</span></Nav.Link>
+                <NavLink to="/home/dashboard" className='nav-link ps-2'><Grid1x2/> <span className='ps-2'>Dashboard</span></NavLink>
               </Nav.Item>
               <Nav.Item className='mb-2'>
-                <Nav.Link href=""  className='ps-2'><Coin /> <span className='ps-2'>Salary</span></Nav.Link>
+                <NavLink to="/home/salary" className='nav-link ps-2'><Coin /> <span className='ps-2'>Salary</span></NavLink>
               </Nav.Item>
               <Nav.Item className='mb-2'>
-                <Nav.Link href=""  className='ps-2'><People /> <span className='ps-2'>Employees</span></Nav.Link>
+                <NavLink to="/home/employee" className='nav-link ps-2'><People /> <span className='ps-2'>Employees</span></NavLink>
               </Nav.Item>
               <Nav.Item className='mb-2'>
-                <Nav.Link href="" active className='ps-2'><Person /> <span className='ps-2'>Profile</span></Nav.Link>
+                <NavLink to="/home/profile" className='nav-link ps-2'><Person /> <span className='ps-2'>Profile</span></NavLink>
               </Nav.Item>
               <Nav.Item className='mb-2'>
-                <Nav.Link href="" className='ps-2'><BoxArrowLeft /> <span className='ps-2'>Logout</span></Nav.Link>
+                <NavLink to="/" className='nav-link ps-2'><BoxArrowLeft /> <span className='ps-2'>Logout</span></NavLink>
               </Nav.Item>
           </Nav>
           </Navbar.Collapse>
@@ -42,21 +43,21 @@ const AppNavbar = () => {
           <Nav variant="pills" className="me-auto offcanvasItems">
             <div>
               <Nav.Item className='mb-2'>
-                <Nav.Link href=""  className='ps-2'><Grid1x2/> <span className='ps-2'>Dashboard</span></Nav.Link>
+                <NavLink to="/home/dashboard" className='nav-link ps-2'><Grid1x2/> <span className='ps-2'>Dashboard</span></NavLink>
               </Nav.Item>
               <Nav.Item className='mb-2'>
-                <Nav.Link href=""  className='ps-2'><Coin /> <span className='ps-2'>Salary</span></Nav.Link>
+                <NavLink to="/home/salary" className='nav-link ps-2'><Coin /> <span className='ps-2'>Salary</span></NavLink>
               </Nav.Item>
               <Nav.Item className='mb-2'>
-                <Nav.Link href=""  className='ps-2'><People /> <span className='ps-2'>Employees</span></Nav.Link>
+                <NavLink to="/home/employee" className='nav-link ps-2'><People /> <span className='ps-2'>Employees</span></NavLink>
               </Nav.Item>
             </div>
             <div>
               <Nav.Item className='mb-2'>
-                <Nav.Link href="" active className='ps-2'><Person /> <span className='ps-2'>Profile</span></Nav.Link>
+                <NavLink to="/home/profile" className='nav-link ps-2'><Person /> <span className='ps-2'>Profile</span></NavLink>
               </Nav.Item>
               <Nav.Item className='mb-2'>
-                <Nav.Link href="" className='ps-2'><BoxArrowLeft /> <span className='ps-2'>Logout</span></Nav.Link>
+                <NavLink to="/" className='nav-link ps-2'><BoxArrowLeft /> <span className='ps-2'>Logout</span></NavLink>
               </Nav.Item>
             </div>
           </Nav>

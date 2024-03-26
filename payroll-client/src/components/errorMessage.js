@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Alert from 'react-bootstrap/Alert';
 
 const ErrorMessage = () => {
-    const [show, setShow] = useState(true);
+    const [show, setShow] = useState(false);
     (()=>{
         setTimeout(()=>{
             setShow(false)

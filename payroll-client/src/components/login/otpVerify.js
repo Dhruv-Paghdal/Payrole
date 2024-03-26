@@ -1,11 +1,15 @@
-import React, {useState} from 'react';
+import React, {useState, useContext} from 'react';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import OtpInput from 'react-otp-input';
+import PayrollContext from '../../context/payrollContext';
+import { loginEnum } from '../../constValue';
 
 const OtpVerify = () => {
-    const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState('');
+  const context = useContext(PayrollContext);
+  const {setLoginCard} = context;
   return (
     <>
         <Card.Title className='pb-3 text-center'>Please enter OTP recieved on your email</Card.Title>
@@ -21,9 +25,9 @@ const OtpVerify = () => {
                 renderInput={(props) => <input {...props} />}/>
             </Form.Group>
             <div>
-                <Button className='w-100' type='submit'>Verify</Button>
+                <Button className='w-100' type='submit' onClick={() => {setLoginCard(loginEnum.reset_password)}}>Verify</Button>
             </div>
-            <p className='pt-3 m-0 text-center' style={{fontWeight: "bold",color: "#0d6efd"}}>Back to login</p>
+            <p className='pt-3 m-0 text-center hoverEffect' style={{fontWeight: "bold",color: "#0d6efd"}} onClick={() => {setLoginCard(loginEnum.login)}}>Back to login</p>
             </Form>
         </Card.Text>
     </>

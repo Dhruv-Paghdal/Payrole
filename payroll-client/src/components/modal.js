@@ -1,4 +1,4 @@
-import React,{useState} from 'react'
+import React,{useContext} from 'react'
 import Modal from 'react-bootstrap/Modal';
 import SalaryDetailModal from './modals/salaryDetailModal';
 import DownloadAttendanceSheetModal from './modals/downloadAttendanceSheetModal';
@@ -12,35 +12,36 @@ import EditEmployeeModal from './modals/editEmployeeModal';
 import DeleteEmployeeModal from './modals/deleteEmployeeModal';
 import EmployeeIncrementModal from './modals/employeeIncrementModal';
 import EditCompanyProfileModal from './modals/editCompanyProfileModal';
-
+import PayrollContext from '../context/payrollContext';
+import { modalTypeEnum } from '../constValue';
 import "./css/modal.css"
 
-const AppModal = (props) => {
-  const show = props.modalShow;
-  const setModalShow = props.setModalShow;
+const AppModal = () => {
+  const context = useContext(PayrollContext);
+  const {modalType, modalShow, setModalShow, modalData} = context;
   const handleClose = () => {setModalShow(false)};
   return (
     <Modal
-      show={show}
+      show={modalShow}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
       centered
       onHide={handleClose}
     >
-      {(props.modalType === "detail") && <SalaryDetailModal modalData={props.modalData}/>}
-      {(props.modalType === "attendance") && <DownloadAttendanceSheetModal />}
-      {(props.modalType === "calculateSalary") && <CalculateSalaryModal />}
-      {(props.modalType === "advanceSalary") && <AddAdvanceSalaryModal />}
-      {(props.modalType === "editAdvanceSalary") && <EditAdvanceSalaryModal modalData={props.modalData}/>}
-      {(props.modalType === "addEmployee") && <AddEmployeeModal />}
-      {(props.modalType === "employeeDetail") && <EmployeeDetailModal />}
-      {(props.modalType === "editEmployee") && <EditEmployeeModal modalData={props.modalData}/>}
-      {(props.modalType === "deleteEmployee") && <DeleteEmployeeModal modalData={props.modalData} handleClose={handleClose}/>}
-      {(props.modalType === "incrementEmployee") && <EmployeeIncrementModal individual={true} modalData={props.modalData}/>}
-      {(props.modalType === "incrementAllEmployee") && <EmployeeIncrementModal individual={false}/>}
-      {(props.modalType === "searchFilter") && <SearchFilterModal showDate={false}/>}
-      {(props.modalType === "dateSearchFilter") && <SearchFilterModal showDate={true}/>}
-      {(props.modalType === "editCompanyProfile") && <EditCompanyProfileModal modalData={props.modalData}/>}
+      {(modalType === modalTypeEnum.detail) && <SalaryDetailModal modalData={modalData}/>}
+      {(modalType === modalTypeEnum.attendance) && <DownloadAttendanceSheetModal />}
+      {(modalType === modalTypeEnum.calculate_salary) && <CalculateSalaryModal />}
+      {(modalType === modalTypeEnum.advance_salary) && <AddAdvanceSalaryModal />}
+      {(modalType === modalTypeEnum.edit_advance_salary) && <EditAdvanceSalaryModal modalData={modalData}/>}
+      {(modalType === modalTypeEnum.add_employee) && <AddEmployeeModal />}
+      {(modalType === modalTypeEnum.employee_detail) && <EmployeeDetailModal />}
+      {(modalType === modalTypeEnum.edit_employee) && <EditEmployeeModal modalData={modalData}/>}
+      {(modalType === modalTypeEnum.delete_employee) && <DeleteEmployeeModal modalData={modalData} handleClose={handleClose}/>}
+      {(modalType === modalTypeEnum.employee_increment) && <EmployeeIncrementModal individual={true} modalData={modalData}/>}
+      {(modalType === modalTypeEnum.all_employee_increment) && <EmployeeIncrementModal individual={false}/>}
+      {(modalType === modalTypeEnum.search_filter) && <SearchFilterModal showDate={false}/>}
+      {(modalType === modalTypeEnum.date_search_filter) && <SearchFilterModal showDate={true}/>}
+      {(modalType === modalTypeEnum.edit_company_profile) && <EditCompanyProfileModal modalData={modalData}/>}
     </Modal>
   )
 }

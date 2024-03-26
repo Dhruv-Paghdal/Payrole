@@ -1,11 +1,15 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import Form from 'react-bootstrap/Form';
 import Card from 'react-bootstrap/Card';
 import InputGroup from 'react-bootstrap/InputGroup';
 import {EnvelopeAtFill} from 'react-bootstrap-icons';
 import Button from 'react-bootstrap/Button';
+import PayrollContext from '../../context/payrollContext';
+import { loginEnum } from '../../constValue';
 
 const ForgotPasswordForm = () => {
+  const context = useContext(PayrollContext);
+  const {setLoginCard} = context;
   return (
     <>
         <Card.Title className='pb-3 text-center'>Reset your password</Card.Title>
@@ -18,9 +22,9 @@ const ForgotPasswordForm = () => {
                 </InputGroup>
             </Form.Group>
             <div>
-                <Button className='w-100' type='submit'>Send Request</Button>
+                <Button className='w-100' type='submit' onClick={() => {setLoginCard(loginEnum.otp)}}>Send Request</Button>
             </div>
-            <p className='pt-3 m-0 text-center' style={{fontWeight: "bold",color: "#0d6efd"}}>Back to login</p>
+            <p className='pt-3 m-0 text-center hoverEffect' style={{fontWeight: "bold",color: "#0d6efd"}} onClick={() => {setLoginCard(loginEnum.login)}}>Back to login</p>
             </Form>
         </Card.Text>
     </>

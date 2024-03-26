@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useState, useContext} from 'react';
 import Button from 'react-bootstrap/Button';
 import AppModal from './modal';
 import Form from 'react-bootstrap/Form';
@@ -6,15 +6,13 @@ import {Calculator, PlusLg, PencilSquare, Sliders, CurrencyRupee} from 'react-bo
 import Pagination from 'react-bootstrap/Pagination';
 import Table from 'react-bootstrap/Table';
 import moment from 'moment';
+import PayrollContext from '../context/payrollContext';
+import { modalTypeEnum } from '../constValue';
 import './css/salary.css';
 
-const Salary = (props) => {
-    const modalShow = props.modalShow;
-    const setModalShow = props.setModalShow;
-    const modalType = props.modalType;
-    const setModalType = props.setModalType;
-    const modalData = props.modalData;
-    const setModalData = props.setModalData;
+const Salary = () => {
+    const context = useContext(PayrollContext);
+    const { setModalShow, setModalType, setModalData} = context;
     const maxLimit = 10;
     const data = [
         {
@@ -272,7 +270,7 @@ const Salary = (props) => {
       ];
     const [curr, set_Curr] = useState(1);  
     const handelModal = (type, data) => {
-      if(type === "editAdvanceSalary") {
+      if(type === modalTypeEnum.edit_advance_salary) {
         setModalData([data])
       }
         setModalType(type);
@@ -356,7 +354,7 @@ const Salary = (props) => {
                     <p>Calculate monthly salary hassle free and seamlessly</p>
                 </div>
                 <div>
-                    <Button className='w-100' onClick={()=>{handelModal("calculateSalary")}}><Calculator /> Calculate</Button>
+                    <Button className='w-100' onClick={()=>{handelModal(modalTypeEnum.calculate_salary)}}><Calculator /> Calculate</Button>
                 </div>
             </div>
             <hr />
@@ -367,7 +365,7 @@ const Salary = (props) => {
                         <p>Manage advance salaries of employees</p>
                     </div>
                     <div>
-                        <Button className='w-100' onClick={()=>{handelModal("advanceSalary")}}><PlusLg /> Add advance salary</Button>
+                        <Button className='w-100' onClick={()=>{handelModal(modalTypeEnum.advance_salary)}}><PlusLg /> Add advance salary</Button>
                     </div>
                 </div>
                 <header className='content-flex mt-3'>
@@ -383,7 +381,7 @@ const Salary = (props) => {
                         <p>Entries</p>
                     </div>
                     <div>
-                        <Button onClick={()=>handelModal('dateSearchFilter')}><Sliders /> Filter</Button>
+                        <Button onClick={()=>handelModal(modalTypeEnum.date_search_filter)}><Sliders /> Filter</Button>
                     </div>
                 </header>
                 <div className='my-3' style={{height: "50vh", overflowX: "hidden"}}>
@@ -405,7 +403,7 @@ const Salary = (props) => {
                                     <td>{ele.employeeDetail[0].employeeId}</td>
                                     <td>{moment(ele.date).format("DD-MM-YYYY")}</td>
                                     <td style={{color: "#198754", fontWeight: "bold"}}><CurrencyRupee /> {ele.amount.toLocaleString()}</td>
-                                    <td><PencilSquare className={"hoverEffect"} onClick={()=>{handelModal("editAdvanceSalary", ele)}}/></td>
+                                    <td><PencilSquare className={"hoverEffect"} onClick={()=>{handelModal(modalTypeEnum.edit_advance_salary, ele)}}/></td>
                                 </tr>
                             })
                         }
@@ -416,7 +414,7 @@ const Salary = (props) => {
                 <Pagination className='mb-0'>{showPageItemsFunction()}</Pagination>                
                 </footer>
             </div>
-            <AppModal modalShow={modalShow} setModalShow={setModalShow} modalType={modalType} modalData={modalData}/>
+            <AppModal />
         </div>
     </>
   )
