@@ -16,7 +16,7 @@
 }
 
 .imageContainer{
-    background-image: url("../../../public/6052389.jpg");
+    background-image: url("../../../public/payrole.jpg");
     width: 50vw;
     height: 100vh;
     background-repeat: no-repeat;
@@ -32,10 +32,10 @@
 
 .loginText, .loginPassword{
     padding-left: 15px;
-    padding-right: 70px;
     padding-bottom: 15px;
     padding-top: 15px;
     border-radius: 15px;
+    width: 100%;
 }
 
 .otpInput >div{

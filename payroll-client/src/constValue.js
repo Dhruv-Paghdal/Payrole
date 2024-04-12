@@ -14,7 +14,7 @@ const modalTypeEnum = {
     add_employee : "add_employee",
     employee_detail : "employee_detail",
     edit_employee : "edit_employee",
-    delete_employee : "delete_employee",
+    delete_data : "delete_data",
     employee_increment : "employee_increment",
     all_employee_increment : "all_employee_increment",
     search_filter : "search_filter",
@@ -22,4 +22,10 @@ const modalTypeEnum = {
     edit_company_profile : "edit_company_profile"
 }
 
-export {loginEnum, modalTypeEnum};
+const deleteTypeEnum = {
+    salary_detial : "salary_detial",
+    advance_salary : "advance_salary",
+    employee_detail : "employee_detail"
+}
+
+export {loginEnum, modalTypeEnum, deleteTypeEnum};

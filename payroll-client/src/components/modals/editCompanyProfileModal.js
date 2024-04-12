@@ -1,63 +1,112 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/esm/Button'; 
-import { PlusLg, DashLg } from 'react-bootstrap-icons';
+import { PlusLg, DashLg } from 'react-bootstrap-icons'
+import PayrollContext from '../../context/payrollContext';
+import {useForm} from "react-hook-form";
+import { editCompanyProfile } from '../../services/profileService';
 
 const EditCompanyProfileModal = (props) => {
-    const data = props.modalData;
-    const [ownerDetailArray, setOwnerDetailArray] = useState([{ name: "", mobile: "", email: ""}])
-
-    useEffect(()=>{
-      if(data.ownerDetail.length) {
-        const ary = [];
-        for (const owner of data.ownerDetail) {
-         ary.push({name: owner.name,
-          mobile: owner.mobile,
-          email: owner.email})
-        }
-        setOwnerDetailArray(ary);
+  const companyData = props.modalData;
+  const [ownerDetailArray, setOwnerDetailArray] = useState([{ name: "", mobile: "", email: ""}]);
+  const {register, formState: {errors}, handleSubmit} = useForm({
+    defaultValues: {
+      "company_name": companyData?.companyName?.trim(),
+      "mobile": companyData?.mobile?.trim(),
+      "company_code": companyData?.companyCode?.trim(),
+      "company_address.addressLine": companyData?.companyAddress?.addressLine,
+      "company_address.landmark": companyData?.companyAddress?.landmark,
+      "company_address.city": companyData?.companyAddress?.city,
+      "company_address.state": companyData?.companyAddress?.state,
+      "company_address.country": companyData?.companyAddress?.country,
+      "company_address.zipCode": companyData?.companyAddress?.zipCode,
+      "working_year": companyData?.workingYear,
+      "week_off_day": companyData?.weekOffDay?.trim()
+    }
+  });
+  const context = useContext(PayrollContext);
+  const {setAlertData, setAlertShow, setAlertVariant, setModalShow, setRefresh} = context;
+  const onSubmit = async(payload) => {
+    if(!payload.company_name) {
+      payload["company_name"] = " "
+    }
+    if(!payload.mobile) {
+      payload["mobile"] = " "
+    }
+    if(!payload.company_code) {
+      payload["company_code"] = " "
+    }
+    if(!payload.week_off_day) {
+      payload["week_off_day"] = " "
+    }
+    payload["owner_detail"] = ownerDetailArray;
+    const {success, status, data, message} = await editCompanyProfile(payload);
+    if(!success) {
+        setAlertVariant("danger");
+    }
+    else{
+        setAlertVariant("success");
+        setRefresh(true);
+    }
+    setAlertShow(true);
+    setAlertData(message);
+    setModalShow(false);
+  }
+  useEffect(()=>{
+    if(companyData?.ownerDetail?.length) {
+      const ary = [];
+      for (const owner of companyData?.ownerDetail) {
+       ary.push({name: owner?.name,
+        mobile: owner?.mobile,
+        email: owner?.email})
       }
-    }, []);
-    const handelAdd = () => {
-      setOwnerDetailArray([...ownerDetailArray, { name: "", mobile: "", email: "" }])
+      setOwnerDetailArray(ary);
     }
-    const handleChange = (index, e) => {
-      const newFormValues = [...ownerDetailArray];
-        newFormValues[index][e.target.name] = e.target.value;
-        setOwnerDetailArray(newFormValues);
-    }
-    const handelRemove = (index) => {
-      const newFormValues = [...ownerDetailArray];
-        newFormValues.splice(index, 1);
-        setOwnerDetailArray(newFormValues)
-    }
+  }, []);
+  const handleAdd = () => {
+    setOwnerDetailArray([...ownerDetailArray, { name: "", mobile: "", email: "" }])
+  }
+  const handleChange = (index, e) => {
+    const newFormValues = [...ownerDetailArray];
+    newFormValues[index][e.target.name] = e.target.value;
+    setOwnerDetailArray(newFormValues);
+  }
+  const handleRemove = (index) => {
+    const newFormValues = [...ownerDetailArray];
+    newFormValues.splice(index, 1);
+    setOwnerDetailArray(newFormValues)
+  }
   return (
     <>
       <Modal.Header closeButton>
-            <Modal.Title id="contained-modal-title-vcenter">
-                Edit profile
-            </Modal.Title>
+        <Modal.Title id="contained-modal-title-vcenter">
+            Edit profile
+        </Modal.Title>
       </Modal.Header>
       <Modal.Body style={{height: "75vh", overflowX: "hidden"}}>
-        <Form >
+        <Form onSubmit={handleSubmit(onSubmit)}>
           <Row className="mb-3">
               <Col lg={true}><Form.Label>Company name</Form.Label></Col>
-              <Col lg={true}><Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" value={data?.companyName}/></Col>
+              <Col lg={true}><Form.Control type="text" style={{background: "#FFFFFF"}} {...register("company_name")}/></Col>
           </Row>
           <Row className="mb-3">
               <Col lg={true}><Form.Label>Company code</Form.Label></Col>
-              <Col lg={true}><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" value={data?.companyCode}/></Col>
+              <Col lg={true}><Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" {...register("company_code")}/></Col>
+          </Row>
+          <Row className="mb-3">
+              <Col lg={true}><Form.Label>Company mobile</Form.Label></Col>
+              <Col lg={true}><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("mobile")}/></Col>
           </Row>
           <Row className="mb-3">
               <Col lg={true}><Form.Label>Working year</Form.Label></Col>
-              <Col lg={true}><Form.Control type="email" style={{background: "#FFFFFF"}} placeholder="" value={data?.workingYear}/></Col>
+              <Col lg={true}><Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" {...register("working_year")}/></Col>
           </Row>
           <Row className="mb-3">
               <Col lg={true}><Form.Label>Week off day</Form.Label></Col>
-              <Col lg={true}><Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" value={data?.weekOffDay}/></Col>
+              <Col lg={true}><Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" {...register("week_off_day")}/></Col>
           </Row>
           <hr />
           <Row>
@@ -72,7 +121,7 @@ const EditCompanyProfileModal = (props) => {
               </Row>
               <Row>
                 <Col>
-                  <Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" value={data?.companyAddress?.addressLine}/>
+                  <Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" {...register("company_address.addressLine")}/>
                 </Col>
               </Row>
             </Col>
@@ -84,19 +133,19 @@ const EditCompanyProfileModal = (props) => {
               </Row>
               <Row>
                 <Col>
-                  <Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" value={data?.companyAddress?.landmark}/>
+                  <Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" {...register("company_address.landmark")}/>
                 </Col>
               </Row>
             </Col>
             <Col lg={true} className="mb-3">
               <Row>
                 <Col>
-                  <Form.Label>City</Form.Label>
+                  <Form.Label>City / Village</Form.Label>
                 </Col>
               </Row>
               <Row>
                 <Col>
-                  <Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" value={data?.companyAddress?.city}/>
+                  <Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" {...register("company_address.city")}/>
                 </Col>
               </Row>
             </Col>
@@ -110,7 +159,7 @@ const EditCompanyProfileModal = (props) => {
               </Row>
               <Row>
                 <Col>
-                  <Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" value={data?.companyAddress?.state}/>
+                  <Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" {...register("company_address.state")}/>
                 </Col>
               </Row>
             </Col>
@@ -122,7 +171,7 @@ const EditCompanyProfileModal = (props) => {
               </Row>
               <Row>
                 <Col>
-                  <Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" value={data?.companyAddress?.country}/>
+                  <Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" {...register("company_address.country")}/>
                 </Col>
               </Row>
             </Col>
@@ -134,7 +183,7 @@ const EditCompanyProfileModal = (props) => {
               </Row>
               <Row>
                 <Col>
-                  <Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" value={data?.companyAddress?.zipCode}/>
+                  <Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("company_address.zipCode")}/>
                 </Col>
               </Row>
             </Col>
@@ -142,70 +191,57 @@ const EditCompanyProfileModal = (props) => {
           <hr />
           <Row>
             <Col><Form.Label>Owner detail</Form.Label></Col>
-            <Col className='text-end'><h4><PlusLg style={{fontSize: "23px"}} className='hoverEffect' onClick={()=>handelAdd()}/></h4></Col>
+            <Col className='text-end'><h4><PlusLg style={{fontSize: "23px"}} className='hoverEffect' onClick={()=>handleAdd()}/></h4></Col>
           </Row>
-          {/* {ownerList} */}
           {
             ownerDetailArray.map((data,index) => (
                <Row  key={index}>
-                      <Col lg={true} className="mb-3">
-                        <Row>
-                          <Col>
-                            <Form.Label>Name</Form.Label>
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col>
-                            <Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" value={data.name || ""} name="name" onChange={e => handleChange(index, e)}/>
-                          </Col>
-                        </Row>
+                  <Col lg={true} className="mb-3">
+                    <Row>
+                      <Col>
+                        <Form.Label>Name</Form.Label>
                       </Col>
-                      <Col lg={true} className="mb-3">
-                        <Row>
-                          <Col>
-                            <Form.Label>Mobile</Form.Label>
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col>
-                            <Form.Control type="text" style={{background: "#FFFFFF"}} name="mobile" placeholder="" value={data.mobile || ""} onChange={e => handleChange(index, e)}/>
-                          </Col>
-                        </Row>
+                    </Row>
+                    <Row>
+                      <Col>
+                        <Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" value={data.name || ""} name="name" onChange={e => handleChange(index, e)}/>
                       </Col>
-                      <Col lg={true} className="mb-3">
+                    </Row>
+                  </Col>
+                  <Col lg={true} className="mb-3">
+                    <Row>
+                      <Col>
+                        <Form.Label>Mobile</Form.Label>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col>
+                        <Form.Control type="tel" style={{background: "#FFFFFF"}} name="mobile" placeholder="" value={data.mobile || ""} onChange={e => handleChange(index, e)}/>
+                      </Col>
+                    </Row>
+                  </Col>
+                  <Col lg={true} className="mb-3">
+                    <Row>
+                      <Col>
                         <Row>
-                          <Col>
+                          <Form.Label>
                             <Row>
-                              <Form.Label>
-                                <Row>
-                                  <Col>Email</Col>
-                                  <Col className='text-end'><DashLg style={{fontSize: "23px"}} className='hoverEffect' onClick={()=>handelRemove(index)}/></Col>
-                                </Row>
-                              </Form.Label>
+                              <Col>Email</Col>
+                              <Col className='text-end'><DashLg style={{fontSize: "23px"}} className='hoverEffect' onClick={()=>handleRemove(index)}/></Col>
                             </Row>
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col>
-                            <Form.Control type="text" style={{background: "#FFFFFF"}} name="email" placeholder="" value={data.email || ""} onChange={e => handleChange(index, e)}/>
-                          </Col>
+                          </Form.Label>
                         </Row>
                       </Col>
+                    </Row>
+                    <Row>
+                      <Col>
+                        <Form.Control type="email" style={{background: "#FFFFFF"}} name="email" placeholder="" value={data.email || ""} onChange={e => handleChange(index, e)}/>
+                      </Col>
+                    </Row>
+                  </Col>
               </Row>
             ))
           }
-          {/* {data.ownerDetail.length > 0 ? data.ownerDetail.map((data,index)=> {
-            return <Row className="mb-3" id={`owner-${index+1}`}>
-            <Col lg={true}><Form.Label>Name</Form.Label><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" value={data?.name}/></Col>
-            <Col lg={true}><Form.Label>Mobile</Form.Label><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" value={data?.mobile}/></Col>
-            <Col lg={true}><Form.Label>Email</Form.Label><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" value={data?.email}/></Col>
-          </Row>
-          }) : <Row className="mb-3" id='owner-1'>
-            <Col lg={true}><Form.Label>Name</Form.Label><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            <Col lg={true}><Form.Label>Mobile</Form.Label><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            <Col lg={true}><Form.Label>Email</Form.Label><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-          </Row>}
-          <div className='additionalOwner'></div> */}
           <Row>
               <Col lg={true}><Button type='submit' className='w-100'>Edit</Button></Col>
           </Row>

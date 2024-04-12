@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 import Alert from 'react-bootstrap/Alert';
+import PayrollContext from '../context/payrollContext';
+import Container from 'react-bootstrap/Container';
 
 const ErrorMessage = () => {
-    const [show, setShow] = useState(false);
+    const context = useContext(PayrollContext);
+    const { alertShow, alertData, setAlertShow, alertVariant} = context;
     (()=>{
         setTimeout(()=>{
-            setShow(false)
+            setAlertShow(false)
         }, 5000)
     })()
   return (
-    <div className='p-3' style={{position:"absolute", right: "0"}}>
-        <Alert key={"danger"} variant={"danger"} show={show} style={{fontWeight: "500"}}>
-            This is a error alert—check it out!
-        </Alert>
+    <div style={{position: "relative"}}>
+        <Container className="my-2" style={{position: "absolute", left: "0", right: "0"}}>
+            <Alert key={"danger"} variant={alertVariant} show={alertShow} style={{fontWeight: "bold", textAlign: "center"}}>
+                {alertData}
+            </Alert>
+        </Container>
     </div>
   )
 }

@@ -1,12 +1,54 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/esm/Button';
+import {useForm} from "react-hook-form";
+import { allEmployeeIncrement, employeeIncrement } from '../../services/employeeService';
+import PayrollContext from '../../context/payrollContext';
 
 const EmployeeIncrementModal = (props) => {
-    const data = props.modalData;
+    const employeeData = props.modalData;
+    const context = useContext(PayrollContext);
+    const {setAlertData, setAlertShow, setAlertVariant, setModalShow, setRefresh} = context;
+    const { register, handleSubmit, formState: { errors }} = useForm({
+        defaultValues: {
+            "employee_id": props.individual ? employeeData?.employeeId : "",
+            "employee_name": props.individual ? employeeData?.name : ""
+        }
+    });
+    const onSubmit = async(payload) => {
+        delete payload.employee_id;
+        delete payload.employee_name;
+        if(props.individual){
+            payload["id"] = employeeData?._id;
+            const {success, status, data, message} = await employeeIncrement(payload);
+            if(!success) {
+                setAlertVariant("danger");
+            }
+            else{
+                setAlertVariant("success");
+                setRefresh(true);
+            }
+            setAlertShow(true);
+            setAlertData(message);
+            setModalShow(false);
+        }
+        else{
+            const {success, status, data, message} = await allEmployeeIncrement(payload);
+            if(!success) {
+                setAlertVariant("danger");
+            }
+            else{
+                setAlertVariant("success");
+                setRefresh(true);
+            }
+            setAlertShow(true);
+            setAlertData(message);
+            setModalShow(false);
+        }
+    }
   return (
     <>
         <Modal.Header closeButton>
@@ -15,33 +57,33 @@ const EmployeeIncrementModal = (props) => {
             </Modal.Title>
         </Modal.Header>
         <Modal.Body>
-        <Form >
-           {props.individual && <Row className="mb-3">
-                <Col><Form.Label>Employee ID</Form.Label></Col>
-                <Col><Form.Control type="text" placeholder="" value={data.employeeId} disabled/></Col>
-            </Row>}
-            {props.individual && <Row className="mb-3">
-                <Col><Form.Label>Name</Form.Label></Col>
-                <Col><Form.Control type="text" placeholder="" value={data.name} disabled/></Col>
-            </Row>}  
-            <Row className="mb-3">
-                <Col><Form.Label>Increment tye</Form.Label></Col>
-                <Col>
-                    <Row>
-                        <Col><Form.Check label="Rs" type="radio" name="incrementType" value="RS"/></Col>
-                        <Col><Form.Check label="%" type="radio" name="incrementType" value="%"/></Col>
-                    </Row>
-                </Col>
-            </Row>
-            <Row className="mb-3">
-                <Col><Form.Label>Increment value</Form.Label></Col>
-                <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            </Row>
-            <Row>
-                <Col></Col>
-                <Col className='text-end'><Button type='submit' className='w-100'>Confirm</Button></Col>
-            </Row>
-        </Form>       
+            <Form onSubmit={handleSubmit(onSubmit)}>
+                {props.individual && <Row className="mb-3">
+                    <Col><Form.Label>Employee ID</Form.Label></Col>
+                    <Col><Form.Control type="text" placeholder="" disabled {...register("employee_id")}/></Col>
+                </Row>}
+                {props.individual && <Row className="mb-3">
+                    <Col><Form.Label>Name</Form.Label></Col>
+                    <Col><Form.Control type="text" placeholder="" disabled {...register("employee_name")}/></Col>
+                </Row>}  
+                <Row className="mb-3">
+                    <Col><Form.Label>Increment tye</Form.Label></Col>
+                    <Col>
+                        <Row>
+                            <Col><Form.Check label="Rs" type="radio" value="RS" {...register("appraisal_type",{required: {value: true, message: "Increment type is requried"}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.appraisal_type && errors.appraisal_type.message}</p></Col>
+                            <Col><Form.Check label="%" type="radio" value="%"{...register("appraisal_type",{required: {value: true, message: "Increment type is requried"}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.appraisal_type && errors.appraisal_type.message}</p></Col>
+                        </Row>
+                    </Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col><Form.Label>Increment value</Form.Label></Col>
+                    <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("appraisal_value",{required: {value: true, message: "Increment value is requried"}, minLength: {value: 1, message: "Minimum 1 digits required"}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.appraisal_value && errors.appraisal_value.message}</p></Col>
+                </Row>
+                <Row>
+                    <Col></Col>
+                    <Col className='text-end'><Button type='submit' className='w-100'>Confirm</Button></Col>
+                </Row>
+            </Form>       
         </Modal.Body>
     </>
   )

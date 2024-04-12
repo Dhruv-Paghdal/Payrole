@@ -42,15 +42,12 @@ function App() {
   ], {
     basename: "/Payrole"
   });
-  
   return (
     <div className="App">
       <States>
         <RouterProvider router={router}/>
       </States>
-    </div>
-
-    
+    </div> 
   );
 }
 

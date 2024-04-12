@@ -1,293 +1,31 @@
-import React,{useState, useContext} from 'react';
+import React,{useState, useContext, useEffect} from 'react';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Form from 'react-bootstrap/Form';
+import { useForm } from "react-hook-form";
 import {PlusLg, InfoCircle, ThreeDots, CurrencyRupee, PencilSquare, Trash, CashStack, Sliders} from 'react-bootstrap-icons';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Pagination from 'react-bootstrap/Pagination';
 import Table from 'react-bootstrap/Table';
 import AppModal from './modal';
 import PayrollContext from '../context/payrollContext';
-import { modalTypeEnum } from '../constValue';
+import { modalTypeEnum, deleteTypeEnum } from '../constValue';
+import { employeeList } from '../services/employeeService';
 
 const Employee = () => {
     const context = useContext(PayrollContext);
-    const { setModalShow, setModalType, setModalData} = context;
-    const data = [
-        {
-          "_id": "65b4b4703295f68bef8b023a",
-          "name": "ALPESH",
-          "mobile": "1234567890",
-          "email": "alpesh@gmail.com",
-          "employeeId": "HK2015-01",
-          "company": "659e4da6c62e0d0c9d717de6",
-          "degisnation": "operator",
-          "wageType": "DAY",
-          "wageAmount": 330,
-          "workingHour": 8,
-          "overTimeWagePercentage": 1.5,
-          "travelAllowance": 110,
-          "recessTime": 30,
-          "isDeleted": false,
-          "createdOn": "2024-01-27T07:44:48.179Z",
-          "updatedOn": "2024-01-30T10:28:56.420Z",
-          "__v": 0
-        },
-        {
-          "_id": "65b4b49d3295f68bef8b023e",
-          "name": "KALPESH",
-          "mobile": "1234567890",
-          "email": "kalpesh@gmail.com",
-          "employeeId": "HK2015-02",
-          "company": "659e4da6c62e0d0c9d717de6",
-          "degisnation": "operator",
-          "wageType": "DAY",
-          "wageAmount": 225,
-          "workingHour": 8,
-          "overTimeWagePercentage": 1.5,
-          "travelAllowance": 100,
-          "recessTime": 30,
-          "isDeleted": false,
-          "createdOn": "2024-01-27T07:45:33.972Z",
-          "updatedOn": "2024-01-30T10:29:24.403Z",
-          "__v": 0
-        },
-        {
-          "_id": "65b4b4c03295f68bef8b0242",
-          "name": "MAHENDRA",
-          "mobile": "1234567890",
-          "email": "mahendra@gmail.com",
-          "employeeId": "HK2015-03",
-          "company": "659e4da6c62e0d0c9d717de6",
-          "degisnation": "operator",
-          "wageType": "DAY",
-          "wageAmount": 210,
-          "workingHour": 8,
-          "overTimeWagePercentage": 1.5,
-          "travelAllowance": 75,
-          "recessTime": 30,
-          "isDeleted": false,
-          "createdOn": "2024-01-27T07:46:08.011Z",
-          "updatedOn": "2024-01-30T10:29:33.601Z",
-          "__v": 0
-        },
-        {
-          "_id": "65b4b4e23295f68bef8b0246",
-          "name": "VIJAY",
-          "mobile": "1234567890",
-          "email": "vijay@gmail.com",
-          "employeeId": "HK2015-04",
-          "company": "659e4da6c62e0d0c9d717de6",
-          "degisnation": "operator",
-          "wageType": "HOUR",
-          "wageAmount": 240,
-          "workingHour": 8,
-          "overTimeWagePercentage": 1.5,
-          "travelAllowance": 100,
-          "recessTime": 30,
-          "isDeleted": false,
-          "createdOn": "2024-01-27T07:46:42.733Z",
-          "updatedOn": "2024-01-30T10:29:41.161Z",
-          "__v": 0
-        },
-        {
-          "_id": "65b4b5113295f68bef8b024a",
-          "name": "HIMANT",
-          "mobile": "1234567890",
-          "email": "himant@gmail.com",
-          "employeeId": "HK2015-05",
-          "company": "659e4da6c62e0d0c9d717de6",
-          "degisnation": "operator",
-          "wageType": "DAY",
-          "wageAmount": 200,
-          "workingHour": 8,
-          "overTimeWagePercentage": 1.5,
-          "travelAllowance": 75,
-          "recessTime": 30,
-          "isDeleted": false,
-          "createdOn": "2024-01-27T07:47:29.564Z",
-          "updatedOn": "2024-01-30T10:29:49.005Z",
-          "__v": 0
-        },
-        {
-          "_id": "65b4b5353295f68bef8b024e",
-          "name": "MAHESH",
-          "mobile": "1234567890",
-          "email": "mahesh@gmail.com",
-          "employeeId": "HK2015-06",
-          "company": "659e4da6c62e0d0c9d717de6",
-          "degisnation": "operator",
-          "wageType": "DAY",
-          "wageAmount": 300,
-          "workingHour": 8,
-          "overTimeWagePercentage": 1.5,
-          "travelAllowance": 90,
-          "recessTime": 30,
-          "isDeleted": false,
-          "createdOn": "2024-01-27T07:48:05.897Z",
-          "updatedOn": "2024-01-30T10:29:56.139Z",
-          "__v": 0
-        },
-        {
-          "_id": "65b4b5533295f68bef8b0252",
-          "name": "JAYESH",
-          "mobile": "1234567890",
-          "email": "jayesh@gmail.com",
-          "employeeId": "HK2015-07",
-          "company": "659e4da6c62e0d0c9d717de6",
-          "degisnation": "operator",
-          "wageType": "DAY",
-          "wageAmount": 330,
-          "workingHour": 8,
-          "overTimeWagePercentage": 1.5,
-          "travelAllowance": 120,
-          "recessTime": 30,
-          "isDeleted": false,
-          "createdOn": "2024-01-27T07:48:35.764Z",
-          "updatedOn": "2024-02-29T11:40:38.008Z",
-          "__v": 0
-        },
-        {
-            "_id": "65b4b4703295f68bef8b023a",
-            "name": "ALPESH",
-            "mobile": "1234567890",
-            "email": "alpesh@gmail.com",
-            "employeeId": "HK2015-01",
-            "company": "659e4da6c62e0d0c9d717de6",
-            "degisnation": "operator",
-            "wageType": "DAY",
-            "wageAmount": 330,
-            "workingHour": 8,
-            "overTimeWagePercentage": 1.5,
-            "travelAllowance": 110,
-            "recessTime": 30,
-            "isDeleted": false,
-            "createdOn": "2024-01-27T07:44:48.179Z",
-            "updatedOn": "2024-01-30T10:28:56.420Z",
-            "__v": 0
-          },
-          {
-            "_id": "65b4b49d3295f68bef8b023e",
-            "name": "KALPESH",
-            "mobile": "1234567890",
-            "email": "kalpesh@gmail.com",
-            "employeeId": "HK2015-02",
-            "company": "659e4da6c62e0d0c9d717de6",
-            "degisnation": "operator",
-            "wageType": "DAY",
-            "wageAmount": 225,
-            "workingHour": 8,
-            "overTimeWagePercentage": 1.5,
-            "travelAllowance": 100,
-            "recessTime": 30,
-            "isDeleted": false,
-            "createdOn": "2024-01-27T07:45:33.972Z",
-            "updatedOn": "2024-01-30T10:29:24.403Z",
-            "__v": 0
-          },
-          {
-            "_id": "65b4b4c03295f68bef8b0242",
-            "name": "MAHENDRA",
-            "mobile": "1234567890",
-            "email": "mahendra@gmail.com",
-            "employeeId": "HK2015-03",
-            "company": "659e4da6c62e0d0c9d717de6",
-            "degisnation": "operator",
-            "wageType": "DAY",
-            "wageAmount": 210,
-            "workingHour": 8,
-            "overTimeWagePercentage": 1.5,
-            "travelAllowance": 75,
-            "recessTime": 30,
-            "isDeleted": false,
-            "createdOn": "2024-01-27T07:46:08.011Z",
-            "updatedOn": "2024-01-30T10:29:33.601Z",
-            "__v": 0
-          },
-          {
-            "_id": "65b4b4e23295f68bef8b0246",
-            "name": "VIJAY",
-            "mobile": "1234567890",
-            "email": "vijay@gmail.com",
-            "employeeId": "HK2015-04",
-            "company": "659e4da6c62e0d0c9d717de6",
-            "degisnation": "operator",
-            "wageType": "DAY",
-            "wageAmount": 240,
-            "workingHour": 8,
-            "overTimeWagePercentage": 1.5,
-            "travelAllowance": 100,
-            "recessTime": 30,
-            "isDeleted": false,
-            "createdOn": "2024-01-27T07:46:42.733Z",
-            "updatedOn": "2024-01-30T10:29:41.161Z",
-            "__v": 0
-          },
-          {
-            "_id": "65b4b5113295f68bef8b024a",
-            "name": "HIMANT",
-            "mobile": "1234567890",
-            "email": "himant@gmail.com",
-            "employeeId": "HK2015-05",
-            "company": "659e4da6c62e0d0c9d717de6",
-            "degisnation": "operator",
-            "wageType": "DAY",
-            "wageAmount": 200,
-            "workingHour": 8,
-            "overTimeWagePercentage": 1.5,
-            "travelAllowance": 75,
-            "recessTime": 30,
-            "isDeleted": false,
-            "createdOn": "2024-01-27T07:47:29.564Z",
-            "updatedOn": "2024-01-30T10:29:49.005Z",
-            "__v": 0
-          },
-          {
-            "_id": "65b4b5353295f68bef8b024e",
-            "name": "MAHESH",
-            "mobile": "1234567890",
-            "email": "mahesh@gmail.com",
-            "employeeId": "HK2015-06",
-            "company": "659e4da6c62e0d0c9d717de6",
-            "degisnation": "operator",
-            "wageType": "DAY",
-            "wageAmount": 300,
-            "workingHour": 8,
-            "overTimeWagePercentage": 1.5,
-            "travelAllowance": 90,
-            "recessTime": 30,
-            "isDeleted": false,
-            "createdOn": "2024-01-27T07:48:05.897Z",
-            "updatedOn": "2024-01-30T10:29:56.139Z",
-            "__v": 0
-          },
-          {
-            "_id": "65b4b5533295f68bef8b0252",
-            "name": "JAYESH",
-            "mobile": "1234567890",
-            "email": "jayesh@gmail.com",
-            "employeeId": "HK2015-07",
-            "company": "659e4da6c62e0d0c9d717de6",
-            "degisnation": "operator",
-            "wageType": "DAY",
-            "wageAmount": 330,
-            "workingHour": 8,
-            "overTimeWagePercentage": 1.5,
-            "travelAllowance": 120,
-            "recessTime": 30,
-            "isDeleted": false,
-            "createdOn": "2024-01-27T07:48:35.764Z",
-            "updatedOn": "2024-02-29T11:40:38.008Z",
-            "__v": 0
-          }
-      ];
-    const maxLimit = 10;
+    const { setModalShow, setModalType, setModalData,  setAlertData, setAlertShow, setAlertVariant, setFilterPayload, refresh, setRefresh, filterPayload, setDeleteType} = context;
+    const [totalPage, setTotalPage] = useState(1);  
+    const [callEffect, setCallEffect] = useState(false);
+    const [data, setData] = useState([]); 
     const [curr, set_Curr] = useState(1);
-    const handelModal = (type, data) => {
-        if(type === modalTypeEnum.edit_employee){
+    const { register, handleSubmit} = useForm();
+    const handleModal = (type, data) => {
+        if(type === modalTypeEnum.edit_employee || type === modalTypeEnum.employee_detail){
             setModalData(data)
         }
-        if(type === modalTypeEnum.delete_employee){
+        if(type === modalTypeEnum.delete_data){
+            setDeleteType(deleteTypeEnum.employee_detail);
             setModalData({
                 employeeId: data.employeeId,
                 _id: data._id
@@ -304,15 +42,15 @@ const Employee = () => {
         setModalShow(true);
     }
     const pageChangeFunction = (p) => {
-        if (p >= 1 && p <= maxLimit) {
+        if (p >= 1 && p <= totalPage) {
               set_Curr(p);
         }
     };
     const showPageItemsFunction = () => {
         const data = [];
         const numPage = 5;
-        if (maxLimit <= numPage) {
-            for (let i = 1; i <= maxLimit; i++) {
+        if (totalPage <= numPage) {
+            for (let i = 1; i <= totalPage; i++) {
                 data.push(
                     <Pagination.Item
                         key={i}
@@ -325,7 +63,7 @@ const Employee = () => {
             }
         } else {
             const leftside = curr - numPage / 2 > 1;
-            const rightside = curr + numPage / 2 < maxLimit;
+            const rightside = curr + numPage / 2 < totalPage;
             data.push(
                 <Pagination.First
                     key="first"
@@ -342,7 +80,7 @@ const Employee = () => {
                 data.push(<Pagination.Ellipsis key="leftEllipsis" />);
             }
             const str = Math.max(1, Math.round(curr - numPage / 2));
-            const end = Math.min(maxLimit, Math.round(curr + numPage / 2));
+            const end = Math.min(totalPage, Math.round(curr + numPage / 2));
             for (let i = str; i <= end; i++) {
                 data.push(
                     <Pagination.Item
@@ -366,22 +104,57 @@ const Employee = () => {
             data.push(
                 <Pagination.Last
                     key="last"
-                    onClick={() => pageChangeFunction(maxLimit)}
+                    onClick={() => pageChangeFunction(totalPage)}
                 />
             );
         }
         return data;
     };
+    const onChange = (data) => {
+        setFilterPayload({...filterPayload, row: data.row ? parseInt(data.row) : 5});
+    }
+    useEffect(() => {
+        if(callEffect){
+            (async()=>{
+              const { success, data, message } = await employeeList(filterPayload);
+              if (!success) {
+                setAlertVariant("danger");
+                setAlertShow(true);
+                setAlertData(message);
+              } else {
+                if (data.length) {
+                  setData(data[0].list);
+                  setTotalPage(parseInt(data[0].page.split(" ")[2]));
+                } else {
+                  setData([]);
+                  set_Curr(1);
+                  setTotalPage(1);
+                }
+              }
+            })()
+            setRefresh(false);
+        }
+    }, [refresh, filterPayload])
+    useEffect(()=>{
+        setFilterPayload({
+          ...filterPayload,
+          page: curr
+        })
+    },[curr])
+    useEffect(()=>{
+        setFilterPayload({page: 1, row: 5, search: {}});
+        setCallEffect(true)
+    }, [])
   return (
     <>
         <div className='m-2 p-3 layoutContentCard' style={{background: "#FFFFFF", borderRadius: "15px"}}>
             <div className='content-flex'>
                 <div>
                     <h3 className='navbarTitle'>Employee List</h3>
-                    <p>Here are your all employees</p>
+                    <p>Here're your all employees</p>
                 </div>
                 <div>
-                    <Button className='w-100' onClick={()=>{handelModal(modalTypeEnum.add_employee)}}><PlusLg /> Add Employee</Button>
+                    <Button className='w-100' onClick={()=>{handleModal(modalTypeEnum.add_employee)}}><PlusLg /> Add Employee</Button>
                 </div>
             </div>
             <hr />
@@ -389,8 +162,8 @@ const Employee = () => {
                 <header className='content-flex'>
                     <div style={{display: "flex", alignItems: "center"}}>
                         <p>Show</p>
-                        <Form className='px-2'>
-                        <Form.Select>
+                        <Form className='px-2' onChange={handleSubmit(onChange)}>
+                        <Form.Select {...register("row")}>
                             <option value="5">5</option>
                             <option value="10">10</option>
                             <option value="15">15</option>
@@ -400,69 +173,72 @@ const Employee = () => {
                     </div>
                     <div>
                         <ButtonGroup>
-                            <Button onClick={()=>handelModal(modalTypeEnum.search_filter)}><Sliders /> Filter</Button>
-                            <Button onClick={()=>handelModal(modalTypeEnum.all_employee_increment)}><CashStack /> Increment</Button>
+                            <Button onClick={()=>handleModal(modalTypeEnum.search_filter)}><Sliders /> Filter</Button>
+                            <Button onClick={()=>handleModal(modalTypeEnum.all_employee_increment)}><CashStack /> Increment</Button>
                         </ButtonGroup>
-                        {/* <ButtonGroup>
-                        </ButtonGroup> */}
                     </div>
                 </header>
-                <div className='my-3'style={{height: "62vh", overflowX: "hidden"}}>
-                <Table hover responsive>
-                    <thead>
-                    <tr>
-                        <th>Employee ID</th>
-                        <th>Name</th>
-                        <th>Mobile</th>
-                        <th>Salary</th>
-                        <th>Detail</th>
-                        <th></th>
-                    </tr>
-                    </thead>
-                    <tbody style={{textAlign: "left"}}>
-                    {data.map((data, index)=>{
-                        return <tr key={data._id}>
-                        <td>
-                            {data.employeeId}
+                <div className='my-3 custom-table-container'>
+                    <Table hover>
+                        <thead>
+                            <tr>
+                                <th>Employee ID</th>
+                                <th>Name</th>
+                                <th>Mobile</th>
+                                <th>Salary</th>
+                                <th>Detail</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody style={{textAlign: "left"}}>
+                        {data.length > 0 ? data.map((data, index)=>{
+                            return <tr key={data._id}>
+                            <td>
+                                {data.employeeId}
+                            </td>
+                            <td>
+                                {
+                                    (data?.name?.split(" ")?.length > 1) ? (data?.name.split(" ")[0]?.charAt(0)?.toUpperCase() + data?.name?.split(" ")[0]?.slice(1)?.toLowerCase() + " " + data?.name?.split(" ")[1]?.charAt(0)?.toUpperCase() + data?.name?.split(" ")[1]?.slice(1)?.toLowerCase()) : (data?.name?.charAt(0)?.toUpperCase() + data?.name?.slice(1)?.toLowerCase())
+                                }
+                            </td>
+                            <td>
+                                {data?.mobile}
+                            </td>
+                            <td style={{color: "#198754", fontWeight: "bold"}}>
+                                <CurrencyRupee /> {data?.wageAmount?.toLocaleString()}
+                            </td>
+                            <td>
+                                <InfoCircle className='hoverEffect' onClick={()=>{handleModal(modalTypeEnum.employee_detail, data)}}/>
+                            </td>
+                            <td>
+                            <Dropdown>
+                            <Dropdown.Toggle className='p-0 m-0'style={{backgroundColor: "transparent", borderColor: "transparent", color: "#000000"}}>
+                                <ThreeDots className='hoverEffect'/>
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                <Dropdown.Header>Action</Dropdown.Header>
+                                <Dropdown.Item onClick={()=>handleModal(modalTypeEnum.edit_employee, data)}><PencilSquare color='#0d6efd' /> Edit</Dropdown.Item>
+                                <Dropdown.Item onClick={()=>handleModal(modalTypeEnum.delete_data, data)}><Trash color='#dc3545'/> Delete</Dropdown.Item>
+                                <Dropdown.Item onClick={()=>handleModal(modalTypeEnum.employee_increment, data)}><CashStack color='#198754'/> Increment</Dropdown.Item>
+                            </Dropdown.Menu>
+                            </Dropdown>
+                            </td>
+                            </tr>
+                        }) : <tr>
+                        <td colSpan={6}>
+                            <div className='text-center'>
+                                No data to display
+                            </div>
                         </td>
-                        <td>
-                            {
-                                (data.name.split(" ").length > 1) ? (data.name.split(" ")[0].charAt(0).toUpperCase() + data.name.split(" ")[0].slice(1).toLowerCase() + " " + data.name.split(" ")[1].charAt(0).toUpperCase() + data.name.split(" ")[1].slice(1).toLowerCase()) : (data.name.charAt(0).toUpperCase() + data.name.slice(1).toLowerCase())
-                            }
-                        </td>
-                        <td>
-                            {data.mobile}
-                        </td>
-                        <td style={{color: "#198754", fontWeight: "bold"}}>
-                           <CurrencyRupee /> {data.wageAmount.toLocaleString()}
-                        </td>
-                        <td>
-                            <InfoCircle className='hoverEffect' onClick={()=>{handelModal(modalTypeEnum.employee_detail)}}/>
-                        </td>
-                        <td>
-                        <Dropdown>
-                        <Dropdown.Toggle className='p-0 m-0'style={{backgroundColor: "transparent", borderColor: "transparent", color: "#000000"}}>
-                            <ThreeDots className='hoverEffect'/>
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            <Dropdown.Header>Action</Dropdown.Header>
-                            <Dropdown.Item onClick={()=>handelModal(modalTypeEnum.edit_employee, data)}><PencilSquare color='#0d6efd' /> Edit</Dropdown.Item>
-                            <Dropdown.Item onClick={()=>handelModal(modalTypeEnum.delete_employee, data)}><Trash color='#dc3545'/> Delete</Dropdown.Item>
-                            <Dropdown.Item onClick={()=>handelModal(modalTypeEnum.employee_increment, data)}><CashStack color='#198754'/> Increment</Dropdown.Item>
-                        </Dropdown.Menu>
-                        </Dropdown>
-                        </td>
-                        </tr>
-                    })}
-                    </tbody>
-                 </Table>
+                        </tr>}
+                        </tbody>
+                    </Table>
                 </div>
                 <footer className='d-flex justify-content-end'>
                     <Pagination className='mb-0'>{showPageItemsFunction()}</Pagination>
                     <AppModal />
                 </footer>
             </div>
-
         </div>
     </>
   )

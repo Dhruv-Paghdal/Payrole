@@ -1,11 +1,33 @@
-import React from 'react';
+import React,{useContext, useState} from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/esm/Button';
+import PayrollContext from '../../context/payrollContext';
+import {useForm} from "react-hook-form";
+import { addEmployee } from '../../services/employeeService';
 
 const AddEmployeeModal = () => {
+    const context = useContext(PayrollContext);
+    const {setAlertData, setAlertShow, setAlertVariant, setModalShow, setRefresh} = context;
+    const { register, handleSubmit, formState: { errors }} = useForm();
+    const onSubmit = async(payload) => {
+        if(!payload.email){
+            delete payload.email
+        }
+        const {success, status, data, message} = await addEmployee(payload);
+        if(!success) {
+            setAlertVariant("danger");
+        }
+        else{
+            setAlertVariant("success");
+            setRefresh(true);
+        }
+        setAlertShow(true);
+        setAlertData(message);
+        setModalShow(false);
+    }
   return (
     <>
         <Modal.Header closeButton>
@@ -14,57 +36,48 @@ const AddEmployeeModal = () => {
             </Modal.Title>
         </Modal.Header>
         <Modal.Body style={{height: "75vh", overflowX: "hidden"}}>
-        <Form >
-            <Row className="mb-3">
-                <Col><Form.Label>Name</Form.Label></Col>
-                <Col><Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            </Row>
-            <Row className="mb-3">
-                <Col><Form.Label>Mobile</Form.Label></Col>
-                <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            </Row>
-            <Row className="mb-3">
-                <Col><Form.Label>Email</Form.Label></Col>
-                <Col><Form.Control type="email" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            </Row>
-            <Row className="mb-3">
-                <Col><Form.Label>Degisnation</Form.Label></Col>
-                <Col><Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            </Row>
-            <Row className="mb-3">
-                <Col><Form.Label>Wage type</Form.Label></Col>
-                <Col>
-                    <Row>
-                        <Col><Form.Check label="Hour" type="radio"  value="HOUR"/></Col>
-                        <Col><Form.Check label="Day" type="radio"  value="DAY"/></Col>
-                    </Row>
-                </Col>
-            </Row>
-            <Row className="mb-3">
-                <Col><Form.Label>Salary</Form.Label></Col>
-                <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            </Row>
-            <Row className="mb-3">
-                <Col><Form.Label>Working hour</Form.Label></Col>
-                <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            </Row>
-            <Row className="mb-3">
-                <Col><Form.Label>Recess time (in minutes)</Form.Label></Col>
-                <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            </Row>
-            <Row className="mb-3">
-                <Col><Form.Label>Travel allowance</Form.Label></Col>
-                <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            </Row>
-            <Row className="mb-3">
-                <Col><Form.Label>Overtime percentage</Form.Label></Col>
-                <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" /></Col>
-            </Row>
-            <Row>
-                <Col></Col>
-                <Col className='text-end'><Button type='submit' className='w-100'>Add</Button></Col>
-            </Row>
-        </Form>       
+            <Form onSubmit={handleSubmit(onSubmit)}>
+                <Row className="mb-3">
+                    <Col><Form.Label>Name</Form.Label></Col>
+                    <Col><Form.Control type="text" style={{background: "#FFFFFF"}} placeholder="" {...register("name",{required: {value: true, message: "Employee name is requried"}, minLength: {value: 3, message: "Employee name must be greater then 3 character"}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.name && errors.name.message}</p></Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col><Form.Label>Mobile</Form.Label></Col>
+                    <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder=""  {...register("mobile",{required: {value: true, message: "Employee mobile is requried"}, minLength: {value: 10, message: "Exactly 10 digits required"}, maxLength: {value: 10, message: "Exactly 10 digits required"}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.mobile && errors.mobile.message}</p></Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col><Form.Label>Email</Form.Label></Col>
+                    <Col><Form.Control type="email" style={{background: "#FFFFFF"}} placeholder=""  {...register("email", {pattern: { value: /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/, message: 'Invalid email address'}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.email && errors.email.message}</p></Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col><Form.Label>Degisnation</Form.Label></Col>
+                    <Col><Form.Control type="text" style={{background: "#FFFFFF"}} placeholder=""  {...register("degisnation",{required: {value: true, message: "Employee degisnation is requried"}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.degisnation && errors.degisnation.message}</p></Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col><Form.Label>Salary</Form.Label></Col>
+                    <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("wage_amount",{required: {value: true, message: "Employee salary is requried"}, minLength: {value: 2, message: "Minimum 2 digits required"}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.wage_amount && errors.wage_amount.message}</p></Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col><Form.Label>Working hour</Form.Label></Col>
+                    <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("working_hour",{required: {value: true, message: "Employee working hour is requried"}, minLength: {value: 1, message: "Minimum 1 digit required"}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.working_hour && errors.working_hour.message}</p></Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col><Form.Label>Recess time (in minutes)</Form.Label></Col>
+                    <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("recess_time",{required: {value: true, message: "Employee recess time is requried"}, minLength: {value: 1, message: "Minimum 1 digit required"}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.recess_time && errors.recess_time.message}</p></Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col><Form.Label>Travel allowance</Form.Label></Col>
+                    <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("travel_allowance",{required: {value: true, message: "Employee travel allowace is requried", minLength: {value: 1, message: "Minimum 1 digit required"}}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.travel_allowance && errors.travel_allowance.message}</p></Col>
+                </Row>
+                <Row className="mb-3">
+                    <Col><Form.Label>Overtime percentage</Form.Label></Col>
+                    <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("over_time_wage_percentage",{required: {value: true, message: "Employee overtime percentage is requried", minLength: {value: 1, message: "Minimum 1 digit required"}}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.over_time_wage_percentage && errors.over_time_wage_percentage.message}</p></Col>
+                </Row>
+                <Row>
+                    <Col></Col>
+                    <Col className='text-end'><Button type='submit' className='w-100'>Add</Button></Col>
+                </Row>
+            </Form>       
         </Modal.Body>
     </>
   )
