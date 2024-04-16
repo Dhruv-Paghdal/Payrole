@@ -10,7 +10,7 @@ exports.profile = async(req, res) => {
             isDeleted: false,
             _id: companyId
         }
-        const companyDetails = await Company.findOne(query, "userName password startDate endDate subscriptionHistory mobile companyName companyCode companyAddress ownerDetail isActive workingYear weekOffDay");
+        const companyDetails = await Company.findOne(query, "userName password startDate endDate subscriptionHistory mobile companyName companyCode companyAddress ownerDetail isActive workingYear weekOffDay email");
         if(!companyDetails) {
             return res.status(404).json({status:404, message: "No company found", data: ""}) 
         }
@@ -36,13 +36,13 @@ exports.edit = async(req, res) => {
         }
         const payload = {}
         if(req.body.company_name) {
-            payload["companyName"] = req.body.company_name
+            payload["companyName"] = req.body.company_name.trim()
         }
         if(req.body.mobile) {
-            payload["mobile"] = req.body.mobile
+            payload["mobile"] = req.body.mobile.trim()
         }
         if(req.body.company_code) {
-            payload["companyCode"] = req.body.company_code
+            payload["companyCode"] = req.body.company_code.trim()
         }
         if(req.body.company_address) {
             payload["companyAddress"] = req.body.company_address
@@ -55,9 +55,9 @@ exports.edit = async(req, res) => {
             payload["workingYearList"] = [req.body.working_year];
         }
         if(req.body.week_off_day) {
-            payload["weekOffDay"] = req.body.week_off_day
+            payload["weekOffDay"] = req.body.week_off_day.trim()
         }
-        if(companyDetails.workingYear) {
+        if(companyDetails.workingYear && req.body.working_year) {
             const existingWorkingYearList = companyDetails.workingYearList;
             if(!existingWorkingYearList.includes(req.body.working_year)) {
                 payload["workingYearList"] = existingWorkingYearList.concat(req.body.working_year);
@@ -70,7 +70,7 @@ exports.edit = async(req, res) => {
         if(!companyModified.modifiedCount) {
             return res.status(400).json({status:400, message: "Error while updating company detail", data: ""}) 
         }
-        return res.status(202).json({status: 202, message: "Company details updated", data: companyModified})
+        return res.status(202).json({status: 202, message: "Company details updated", data: []})
     } catch (error) {
         return res.status(400).json({status:400, message: "Error while updating company detail", data: ""}) 
     }

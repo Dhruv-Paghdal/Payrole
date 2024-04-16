@@ -2,11 +2,39 @@ module.exports = {
     login: {
         username: {
             notEmpty: true,
-            errorMessage: "Mobile number cannot be empty",
+            errorMessage: "Username cannot be empty",
         },
         password: {
             notEmpty: true,
             errorMessage: "Password cannot be empty",  
+        }
+    },
+    resetPassword: {
+        new_password: {
+            notEmpty: true,
+            errorMessage: "New Password cannot be empty", 
+            isLength:{
+                options: { min: 4},
+                errorMessage: "Minimum 4 characters required"   
+            },
+        },
+        confirm_password: {
+            notEmpty: true,
+            errorMessage: "Confirm Password cannot be empty",
+            isLength:{
+                options: { min: 4},
+                errorMessage: "Minimum 4 characters required"   
+            }, 
+        }
+    },
+    otpVerify: {
+        otp: {
+            notEmpty: true,
+            errorMessage: "OTP is required",
+            isLength:{
+                options: { min: 6, max: 6},
+                errorMessage: "OTP must contain 6 digits"   
+            },
         }
     },
     addEmployee: {
@@ -14,7 +42,7 @@ module.exports = {
             notEmpty: true,
             errorMessage: "Name cannot be empty",
             isLength:{
-                options: { min: 3 , max : 10},
+                options: { min: 3 },
                 errorMessage: "Name must be greater then 3 character"   
             },
         },
@@ -36,10 +64,6 @@ module.exports = {
         degisnation: {
             notEmpty: true,
             errorMessage: "Degisnation cannot be empty",
-        },
-        wage_type: {
-            notEmpty: true,
-            errorMessage: "Wage type cannot be empty",
         },
         wage_amount: {
             notEmpty: true,
@@ -70,12 +94,6 @@ module.exports = {
         appraisal_value: {
             notEmpty: true,
             errorMessage: "Appraisal value is required",
-            isInt: {
-                options: {
-                    gt: 0
-                },
-                errorMessage: "Appraisal value must be integer and greater than 0."
-            },
         }
     },
     addAdvanceSalary: {
@@ -126,6 +144,27 @@ module.exports = {
             notEmpty: true,
             isInt: true,
             errorMessage: "Enter a valid other expense."
+        }
+    },
+    attendanceSheet: {
+        month: {
+            notEmpty: true,
+            isInt: {
+                options: {
+                    gt: 0,
+                    lt:13
+                }
+            },
+            errorMessage: "Enter a valid month."
+        },
+        year: {
+            notEmpty: true,
+            isInt: {
+                options: {
+                    gt: 0,
+                }
+            },
+            errorMessage: "Enter a valid year."
         }
     }
 }

@@ -14,6 +14,10 @@ exports.list = async(req, res) => {
         if(!company) {
             return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
         }
+        const query = {
+            isDeleted: false,
+            _id: company
+          }
         const companyDetails = await Company.findOne(query);
         if(!companyDetails) {
             return res.status(404).json({status:404, message: "No company found", data: ""}) 
@@ -42,17 +46,62 @@ exports.list = async(req, res) => {
             }
         }];
         if (req.query.search) {
-            const json = JSON.parse(req.query.search);
-            if (json.field && json.value) {
-                conditions[json.field] = {
-                    "$regex": json.value,
+            const json = req.query.search;
+            if(json.name){
+                conditions["name"] = {
+                    "$regex": json.name,
                     "$options": "i"
                 };
                 countPipeline[0].$group.totalCount.$sum.$cond[0].$and.push({
                     $eq: [{
                         $regexMatch: {
-                            input: `$${json.field}`,
-                            regex: json.value,
+                            input: `$name`,
+                            regex: json.name,
+                            options: "i"
+                        }
+                    }, true]
+                });
+            }
+            if(json.mobile){
+                conditions["mobile"] = {
+                    "$regex": json.mobile,
+                    "$options": "i"
+                };
+                countPipeline[0].$group.totalCount.$sum.$cond[0].$and.push({
+                    $eq: [{
+                        $regexMatch: {
+                            input: `$mobile`,
+                            regex: json.mobile,
+                            options: "i"
+                        }
+                    }, true]
+                });
+            }
+            if(json.email){
+                conditions["email"] = {
+                    "$regex": json.email,
+                    "$options": "i"
+                };
+                countPipeline[0].$group.totalCount.$sum.$cond[0].$and.push({
+                    $eq: [{
+                        $regexMatch: {
+                            input: `$email`,
+                            regex: json.email,
+                            options: "i"
+                        }
+                    }, true]
+                });
+            }
+            if(json.employeeId){
+                conditions["employeeId"] = {
+                    "$regex": json.employeeId,
+                    "$options": "i"
+                };
+                countPipeline[0].$group.totalCount.$sum.$cond[0].$and.push({
+                    $eq: [{
+                        $regexMatch: {
+                            input: `$employeeId`,
+                            regex: json.employeeId,
                             options: "i"
                         }
                     }, true]
@@ -63,8 +112,8 @@ exports.list = async(req, res) => {
         const page = req.query.page > 0 ? parseInt(req.query.page) : 1;
         const offset = (page-1)*row;
         const totalCount = await Employee.aggregate(countPipeline);
-        if(!totalCount.length) {
-            return res.status(200).json({status:200, message: "No employees list", data: totalCount})   
+        if((totalCount.length == 0) || (totalCount[0].totalCount == 0)) {
+            return res.status(200).json({status:200, message: "No employees list", data: []})   
         }
         const totalPage = Math.ceil(totalCount[0].totalCount/row);
         const pipeline = [{
@@ -76,11 +125,10 @@ exports.list = async(req, res) => {
         }];
         const employeeList = await Employee.aggregate(pipeline);
         if(!employeeList.length) {
-            return res.status(200).json({status:200, message: "No employees list", data: employeeList})   
+            return res.status(200).json({status:200, message: "No employees list", data: []})   
         }
-        return res.status(200).json({status:200, message: "Employee list", data: {page: page.toString()+" of "+ totalPage.toString(), list:employeeList}});
+        return res.status(200).json({status:200, message: "Employee list", data: [{page: page.toString()+" of "+ totalPage.toString(), list:employeeList}]});
     } catch (error) {
-        console.log(error);
         return res.status(400).json({status:400, message: "Error getting employee list", data: ""}) 
     }
 }
@@ -107,7 +155,6 @@ exports.add = async(req, res) => {
             return res.status(404).json({status:404, message: "Company code not found. Set company code.", data: ""}) 
         }
         const employeeQuery = {
-            isDeleted: false,
             company: company
         }
         const recentEmployee = await Employee.model.findOne(employeeQuery, null, {sort: {"createdOn": -1}});
@@ -129,7 +176,6 @@ exports.add = async(req, res) => {
             employeeId: employeeId,
             company: company,
             degisnation: req.body.degisnation,
-            wageType: req.body.wage_type,
             wageAmount: parseInt(req.body.wage_amount),
             workingHour: parseInt(req.body.working_hour),
             overTimeWagePercentage: parseFloat(req.body.over_time_wage_percentage),
@@ -177,13 +223,10 @@ exports.edit = async(req, res) => {
             payload["mobile"] = req.body.mobile;
         }
         if(req.body.email) {
-            payload["email"] = req.body.email;
+            payload["email"] = req.body.email.trim();
         }
         if(req.body.degisnation) {
             payload["degisnation"] = req.body.degisnation;
-        }
-        if(req.body.wage_type) {
-            payload["wageType"] = req.body.wage_type;
         }
         if(req.body.wage_amount) {
             payload["wageAmount"] = parseInt(req.body.wage_amount);
@@ -202,11 +245,10 @@ exports.edit = async(req, res) => {
         }
         const employeeUpdate = await Employee.updateOne(req.params.employeeID, payload);
         if(!employeeUpdate.modifiedCount) {
-            return res.status(400).json({status:400, message: "Error while updating employee", data: employeeUpdate}) 
+            return res.status(400).json({status:400, message: "Error while updating employee", data: []}) 
         }
         return res.status(202).json({status:202, message: "Employee updated successfully", data: ""}) 
     } catch (error) {
-        console.log(error);
         return res.status(400).json({status:400, message: "Error while updating employee", data: ""}) 
     }
 }
@@ -300,7 +342,7 @@ exports.appraisal = async(req, res) => {
         if(!employeeExist) {
             return res.status(404).json({status:404, message: "Employee not found", data: ""}) 
         } 
-        const newSalary = (req.body.appraisal_type) === "%" ? parseInt(employeeExist.wageAmount) + ((parseInt(employeeExist.wageAmount) * parseInt(req.body.appraisal_value)) / 100) : parseInt(employeeExist.wageAmount) + parseInt(req.body.appraisal_value);
+        const newSalary = (req.body.appraisal_type) === "%" ? parseInt(employeeExist.wageAmount) + parseInt((parseInt(employeeExist.wageAmount) * parseFloat(req.body.appraisal_value)) / 100) : parseInt(employeeExist.wageAmount) + parseInt(req.body.appraisal_value);
         const payload = {
             wageAmount : Math.floor(newSalary.toString())
         }
@@ -333,14 +375,14 @@ exports.appraisalAll = async(req, res) => {
             company: ObjectId(company)
         }
         const employeeList = await Employee.findAll(query, "_id wageAmount");
-        if(!employeeList) {
+        if(!employeeList.length) {
             return res.status(404).json({status:404, message: "Employees not found", data: ""}) 
         } 
         let newSalaryArray = [];
         switch (req.body.appraisal_type) {
             case "%":
                 for (const employee of employeeList) {
-                    const newSalary = parseInt(employee.wageAmount) + ((parseInt(employee.wageAmount) * parseInt(req.body.appraisal_value)) / 100);
+                    const newSalary = parseInt(employee.wageAmount) + parseInt((parseInt(employee.wageAmount) * parseFloat(req.body.appraisal_value)) / 100);
                     newSalaryArray.push({_id: employee._id, wageAmount: newSalary.toString()})
                 }
                 break;

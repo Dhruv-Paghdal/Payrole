@@ -19,9 +19,12 @@ exports.list = async(req, res) => {
         if(!companyDetails) {
             return res.status(404).json({status:404, message: "No company found", data: ""}) 
         }
-        const searchJSON = req.query.search && JSON.parse(req.query.search);
+        const searchJSON = req.query.search;
         const startDate = searchJSON?.start ? new Date(searchJSON.start) : new Date(moment().startOf('month').format("YYYY-MM-DD"));
         const endDate = searchJSON?.end ? new Date(searchJSON.end) : new Date(moment().endOf('month').format("YYYY-MM-DD"));
+        if(startDate > endDate){
+            return res.status(400).json({status:400, message: "Invalid dates", data: ""}) 
+        }
         const row = req.query.row > 0 ? parseInt(req.query.row) : 5;
         const page = req.query.page > 0 ? parseInt(req.query.page) : 1;
         const offset = (page-1)*row;
@@ -175,16 +178,16 @@ exports.list = async(req, res) => {
             })
         }
         const totalCount = await AdvanceSalary.aggregate(countPipeline);
-        if(!totalCount.length) {
-            return res.status(200).json({status:200, message: "No advance salary list", data: totalCount})   
+        if((totalCount.length == 0) || (totalCount[0].totalCount == 0)) {
+            return res.status(200).json({status:200, message: "No advance salary list", data: []})   
         }
         const totalPage = Math.ceil(totalCount[0].totalCount/row);
         pipeline.push(filter, lookup, searchFilter, {$skip: offset}, {$limit: row});
         const advanceSalaryList = await AdvanceSalary.aggregate(pipeline);
         if(!advanceSalaryList.length) {
-            return res.status(200).json({status:200, message: "No advance salary list", data: advanceSalaryList})   
+            return res.status(200).json({status:200, message: "No advance salary list", data: []})   
         }
-        return res.status(200).json({status:200, message: "Advance salary list successfully", data: {page: page.toString()+" of "+ totalPage.toString(), list:advanceSalaryList}}) 
+        return res.status(200).json({status:200, message: "Advance salary list successfully", data: [{page: page.toString()+" of "+ totalPage.toString(), list:advanceSalaryList}]}) 
     } catch (error) {
         return res.status(400).json({status:400, message: "Error while getting advance salary list", data: ""}) 
     }
@@ -278,10 +281,49 @@ exports.edit = async(req, res) => {
         }
         const advanceSalaryUpdate = await AdvanceSalary.updateOne(req.params.advanveSalaryID, payload);
         if(!advanceSalaryUpdate.modifiedCount) {
-            return res.status(400).json({status:400, message: "Error while updating employee advance salary", data: advanceSalaryUpdate}) 
+            return res.status(400).json({status:400, message: "Error while updating employee advance salary", data: []}) 
         }
         return res.status(202).json({status:202, message: "Employee advance salary updated successfully", data: ""}) 
     } catch (error) {
         return res.status(400).json({status:400, message: "Error while updating employee advance salary", data: ""}) 
+    }
+}
+
+exports.delete = async(req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({status:400, message:errors.array(), data:""});
+        }
+        const company = req.user;
+        if(!company) {
+            return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
+        }
+        const companyQuery = {
+            isDeleted: false,
+            _id: company
+        }
+        const companyExist = await Company.findOne(companyQuery);
+        if (!companyExist) {
+            return res.status(404).json({status:404, message: "No company found", data: ""}) 
+        }
+        if (!companyExist.isActive) {
+            return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
+        }
+        const query = {
+            _id : req.params.advanveSalaryID,
+            isDeleted: false,
+        }
+        const advanceSalaryExist = await AdvanceSalary.findOne(query);
+        if(!advanceSalaryExist) {
+            return res.status(404).json({status:404, message: "Employee advance salary not found", data: ""}) 
+        }
+        const advanceSalaryUpdate = await AdvanceSalary.deleteOne(req.params.advanveSalaryID);
+        if(!advanceSalaryUpdate.modifiedCount) {
+            return res.status(400).json({status:400, message: "Error while deleteing employee advance salary", data: []}) 
+        }
+        return res.status(202).json({status:202, message: "Employee advance salary deleted successfully", data: ""}) 
+    } catch (error) {
+        return res.status(400).json({status:400, message: "Error while deleteing employee advance salary", data: ""}) 
     }
 }

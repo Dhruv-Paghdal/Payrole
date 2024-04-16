@@ -32,11 +32,6 @@ const employeeSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    wageType: {
-        type: String,
-        enum: ["HOUR", "DAY"],
-        required: true,
-    },
     wageAmount: {
         type: Number,
         required: true,

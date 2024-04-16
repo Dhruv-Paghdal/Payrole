@@ -20,6 +20,10 @@ const companySchema = new mongoose.Schema({
         type: String,
         require: true
     },
+    email: {
+        type: String,
+        require: true
+    },
     startDate: {
         type: Date
     },
@@ -79,9 +83,8 @@ const companySchema = new mongoose.Schema({
     workingYearList: [{
         type: String
     }],
-    isAdmin: {
-        type: Boolean,
-        default: false
+    resetPin: {
+        type: String
     },
     isActive: {
         type: Boolean,

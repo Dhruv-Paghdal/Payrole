@@ -34,6 +34,13 @@ const salarySchema = new mongoose.Schema({
             type: mongoose.Schema.Types.ObjectId,
             required: true
         },
+        fixedSalary: {
+            type: Number,
+            required: true,
+        },
+        travelAllowance: {
+            type: Number,
+        },
         totalWorkingDays: {
             type: Number,
             required: true,

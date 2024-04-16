@@ -9,5 +9,6 @@ advanceSalaryRouter.get("/list",[
 ], advanceSalaryService.list);
 advanceSalaryRouter.post("/add", checkSchema(validation.addAdvanceSalary), advanceSalaryService.add);
 advanceSalaryRouter.put("/:advanveSalaryID/edit", param('advanveSalaryID').notEmpty().withMessage("Advance salary ID is required"), advanceSalaryService.edit);
+advanceSalaryRouter.put("/:advanveSalaryID/delete", param('advanveSalaryID').notEmpty().withMessage("Advance salary ID is required"), advanceSalaryService.delete);
 
 module.exports = advanceSalaryRouter;

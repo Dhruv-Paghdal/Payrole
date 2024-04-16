@@ -22,7 +22,7 @@ const advanceSalarySchema = new mongoose.Schema({
         require: true
     },
     type: {
-        enum: ["CASH", "NEFT"],
+        enum: ["CASH", "NEFT", "OTHER"],
         type: String,
         require: true
     },

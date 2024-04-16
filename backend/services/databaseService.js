@@ -1,11 +1,9 @@
 const mongoose  = require('mongoose');
-// const {createCompanyCollection} = require('../models/company');
-// const {createSlaryCollection} = require('../models/salary');
-// const {createEmployeeCollection} = require('../models/employee');
 
 exports.connectDB = async() => {
     try {
         await mongoose.connect(process.env.DB_URL, {
+          dbName: "payroll-client",
           useNewUrlParser: true,
           useUnifiedTopology: true
         });
