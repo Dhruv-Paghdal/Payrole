@@ -8,18 +8,30 @@ const salaryService = require('../services/salaryService');
 const sheetValidator = require('../middleware/sheetValidator');
 
 const storage = multer.diskStorage({
+    // destination: function (req, file, cb) {
+    //     if(!fs.existsSync(path.join(__dirname, "../public/uploads/company/"))){
+    //         fs.mkdirSync(path.join(__dirname, "../public/uploads/company/"), { recursive: true });
+    //     }
+    //     if(!fs.existsSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/`))){
+    //         fs.mkdirSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/`), { recursive: true });
+    //     }
+    //     cb(null, path.join(__dirname, `../public/uploads/company/${req.params.companyId}/`));
+    // },
+    // filename: function (req, file, cb) {
+    //   const renamedFile = req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(file.originalname);
+    //   cb(null, renamedFile)
+    // }
     destination: function (req, file, cb) {
-        if(!fs.existsSync(path.join(__dirname, "../public/uploads/company/"))){
-            fs.mkdirSync(path.join(__dirname, "../public/uploads/company/"), { recursive: true });
+        const destinationPath = path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId);
+        if (!fs.existsSync(destinationPath)) {
+            fs.mkdirSync(destinationPath, { recursive: true });
+            console.log(destinationPath);
         }
-        if(!fs.existsSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/`))){
-            fs.mkdirSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/`), { recursive: true });
-        }
-        cb(null, path.join(__dirname, `../public/uploads/company/${req.params.companyId}/`));
+        cb(null, destinationPath);
     },
     filename: function (req, file, cb) {
-      const renamedFile = req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(file.originalname);
-      cb(null, renamedFile)
+        const renamedFile = `${req.body.month}-${req.body.year}_TimeSheet${path.extname(file.originalname)}`;
+        cb(null, renamedFile);
     }
 })
 

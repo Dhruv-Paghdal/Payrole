@@ -10,7 +10,7 @@ const { validationResult } = require('express-validator');
 const path = require('path');
 const moment = require('moment');
 const fs = require('fs');
-const templateFile = path.join(__dirname + "/../templates/index.html");
+const templateFile =  path.join(__dirname, '..', 'templates', 'index.html');
 
 const puppeteerOptions = {
   headless: true,
@@ -101,34 +101,34 @@ exports.calculate = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`))
+      fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
         return res.status(400).json({ status: 400, message: errors.array(), data: "" });
     }
     const companyId = req.user;
     if(!companyId) {
-      fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`))
+      fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
       return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
     }
     if(companyId !== req.params.companyId) {
-      fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`))
+      fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
       return res.status(400).json({status:400, message: "CompanyId is incorrect", data: ""}) 
     }
-    const excelSheetName = path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`);
+    const excelSheetName = path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`);
     const companyQuery = {
         isDeleted: false,
         _id: companyId
     }
     const companyDetails = await Company.findOne(companyQuery);
     if (!companyDetails) {
-        fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`))
+        fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
         return res.status(404).json({ status: 404, message: "No company found", data: "" })
     }
     if (!companyDetails.isActive) {
-        fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`))
+        fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
         return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
     }
     if (!companyDetails.workingYear) {
-        fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`))
+        fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
         return res.status(400).json({ status: 400, message: "Working-year not found. Please set working year", data: "" })
     }
     const employeeQuery = {
@@ -137,7 +137,7 @@ exports.calculate = async (req, res) => {
     }
     const employeeList = await Employee.findAll(employeeQuery, "_id employeeId wageAmount workingHour overTimeWagePercentage travelAllowance recessTime")
     if (!employeeList) {
-        fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`))
+        fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
         return res.status(404).json({ status: 404, message: "No employee found", data: "" });
     }
     const startDate = new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").startOf('month').format("YYYY-MM-DD"));
@@ -305,14 +305,14 @@ exports.calculate = async (req, res) => {
     }
     const salaries = await Salary.insertOne(payload);
     if (!salaries) {
-      fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`));
+      fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`));
       return res.status(400).json({status:400, message: "Error while calculating employees salaries.", data: ""}) 
     }
-    fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`))
+    fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
     return res.status(200).json({ status: 200, message: "Employees salaries calculated successfully.", data: "" })
   } catch (error) {
-    fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`));
-    return res.status(400).json({status:400, message: "Error while calculating salary", data: error}); 
+    fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`));
+    return res.status(400).json({status:400, message: "Error while calculating salary", data: ""}); 
   }
 }
 
@@ -445,7 +445,7 @@ exports.report = async (req, res) => {
       res.send(sheet);
     }
   } catch (error) {
-    return res.status(400).json({status:400, message: "Error while generating salary report", data: error}); 
+    return res.status(400).json({status:400, message: "Error while generating salary report", data: ""}); 
   }
 }
 
