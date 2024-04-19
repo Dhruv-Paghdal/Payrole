@@ -308,6 +308,7 @@ exports.calculate = async (req, res) => {
       fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`));
       return res.status(400).json({status:400, message: "Error while calculating employees salaries.", data: ""}) 
     }
+    fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`))
     return res.status(200).json({ status: 200, message: "Employees salaries calculated successfully.", data: "" })
   } catch (error) {
     fs.unlinkSync(path.join(__dirname, `../public/uploads/company/${req.params.companyId}/${req.body.month + "-" + req.body.year + "_TimeSheet" + path.extname(req.file.originalname)}`));
