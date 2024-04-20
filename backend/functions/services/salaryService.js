@@ -466,8 +466,8 @@ exports.sheet = async (req, res) => {
       return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
     }
     console.log("COMPANY ACTIVE");
-    const startDate = (new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").startOf('month').format("YYYY-MM-DD"))).toLocaleDateString();
-    const endDate = (new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").endOf('month').format("YYYY-MM-DD"))).toLocaleDateString();
+    const startDate = (new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").startOf('month').format("YYYY-MM-DD"))).toLocaleDateString().split("/")[1];
+    const endDate = (new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").endOf('month').format("YYYY-MM-DD"))).toLocaleDateString().split("/")[1];
     console.log("START DATE CREATED", startDate);
     console.log("END DATE CREATED", endDate);
     const dateArray = [];
