@@ -509,7 +509,7 @@ exports.sheet = async (req, res) => {
     res.setHeader("Content-Disposition", `attachment; filename=ATTENDANCE_SHEET_${req.body.month}.xlsx`);
     res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
     console.log("BUFFER SENT");
-    res.status(200).send(sheet.toString('base64'));
+    res.status(200).send(sheet);
   } catch (error) {
     return res.status(400).json({status:400, message: "Error while generating attendance sheet", data: ""}); 
   }
