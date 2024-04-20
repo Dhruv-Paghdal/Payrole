@@ -101,35 +101,28 @@ exports.calculate = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
-        return res.status(400).json({ status: 400, message: errors.array(), data: "" });
+      return res.status(400).json({ status: 400, message: errors.array(), data: "" });
     }
     const companyId = req.user;
     if(!companyId) {
-      fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
       return res.status(400).json({status:400, message: "CompanyId not found in header", data: ""}) 
     }
     if(companyId !== req.params.companyId) {
-      fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
       return res.status(400).json({status:400, message: "CompanyId is incorrect", data: ""}) 
     }
-    const excelSheetName = path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`);
     const companyQuery = {
         isDeleted: false,
         _id: companyId
     }
     const companyDetails = await Company.findOne(companyQuery);
     if (!companyDetails) {
-        fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
-        return res.status(404).json({ status: 404, message: "No company found", data: "" })
+      return res.status(404).json({ status: 404, message: "No company found", data: "" })
     }
     if (!companyDetails.isActive) {
-        fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
-        return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
+      return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
     }
     if (!companyDetails.workingYear) {
-        fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
-        return res.status(400).json({ status: 400, message: "Working-year not found. Please set working year", data: "" })
+      return res.status(400).json({ status: 400, message: "Working-year not found. Please set working year", data: "" })
     }
     const employeeQuery = {
         isDeleted: false,
@@ -137,8 +130,7 @@ exports.calculate = async (req, res) => {
     }
     const employeeList = await Employee.findAll(employeeQuery, "_id employeeId wageAmount workingHour overTimeWagePercentage travelAllowance recessTime")
     if (!employeeList) {
-        fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
-        return res.status(404).json({ status: 404, message: "No employee found", data: "" });
+      return res.status(404).json({ status: 404, message: "No employee found", data: "" });
     }
     const startDate = new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").startOf('month').format("YYYY-MM-DD"));
     const endDate = new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").endOf('month').format("YYYY-MM-DD"));
@@ -168,7 +160,7 @@ exports.calculate = async (req, res) => {
         "PUNCH_OUT": 'out'
     };
     const employeeData = [];
-    const workbook = XLSX.readFile(excelSheetName);
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' })
     const sheet_name_list = workbook.SheetNames;
     const sheet_number = 0;
     folder_name = sheet_name_list[sheet_number];
@@ -305,13 +297,10 @@ exports.calculate = async (req, res) => {
     }
     const salaries = await Salary.insertOne(payload);
     if (!salaries) {
-      fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`));
       return res.status(400).json({status:400, message: "Error while calculating employees salaries.", data: ""}) 
     }
-    fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`))
     return res.status(200).json({ status: 200, message: "Employees salaries calculated successfully.", data: "" })
   } catch (error) {
-    fs.unlinkSync(path.join(process.cwd(), 'public', 'uploads', 'company', req.params.companyId, `${req.body.month}-${req.body.year}_TimeSheet${path.extname(req.file.originalname)}`));
     return res.status(400).json({status:400, message: "Error while calculating salary", data: ""}); 
   }
 }
@@ -442,7 +431,7 @@ exports.report = async (req, res) => {
       res.setHeader("Content-Disposition", `attachment; filename=SALARY_REPORT ${salaryDetail[0].month}-${salaryDetail[0].year}.xlsx`);
       res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
       res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-      res.send(sheet);
+      res.send(Buffer.from(sheet, "binary"));
     }
   } catch (error) {
     return res.status(400).json({status:400, message: "Error while generating salary report", data: ""}); 
@@ -470,8 +459,8 @@ exports.sheet = async (req, res) => {
     if (!companyDetails.isActive) {
       return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
     }
-    const startDate = new Date(moment(req.body.year+"-"+req.body.month).startOf('month').format("YYYY-MM-DD")).toLocaleDateString().split("/")[0];
-    const endDate = new Date(moment(req.body.year+"-"+req.body.month).endOf('month').format("YYYY-MM-DD")).toLocaleDateString().split("/")[0];
+    const startDate = new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").startOf('month').format("YYYY-MM-DD")).toLocaleDateString().split("/")[0];
+    const endDate = new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").endOf('month').format("YYYY-MM-DD")).toLocaleDateString().split("/")[0];
     const dateArray = [];
     for (let index = startDate; index <= endDate; index++) {
       dateArray.push(`${index}-${req.body.month}-${req.body.year}`)
@@ -504,7 +493,7 @@ exports.sheet = async (req, res) => {
     res.setHeader("Content-Disposition", `attachment; filename=ATTENDANCE_SHEET_${req.body.month}.xlsx`);
     res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
     res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.send(sheet);
+    res.send(Buffer.from(sheet, "binary"));
   } catch (error) {
     return res.status(400).json({status:400, message: "Error while generating attendance sheet", data: ""}); 
   }
