@@ -424,14 +424,7 @@ exports.report = async (req, res) => {
         delete data.ADVANCE_SALARY_LIST;
         delete data.TRAVEL_ALLOWANCE_PER_DAY;
       }
-      const sheetData = XLSX.utils.json_to_sheet(salaryData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, sheetData, `SALARY_${salaryDetail[0].month}`);
-      const sheet=XLSX.write(workbook,{bookType: "xlsx",type:"buffer"});
-      res.setHeader("Content-Disposition", `attachment; filename=SALARY_REPORT ${salaryDetail[0].month}-${salaryDetail[0].year}.xlsx`);
-      res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-      res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-      res.send(Buffer.from(sheet, "binary"));
+      return res.status(200).json({status:200, message: "Salary report data generated", data: [{year: salaryDetail[0].year, month: salaryDetail[0].month, list: salaryData}]});
     }
   } catch (error) {
     return res.status(400).json({status:400, message: "Error while generating salary report", data: ""}); 
@@ -442,13 +435,10 @@ exports.sheet = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log("ERROR IN REQ BODY");
       return res.status(400).json({ status: 400, message: errors.array(), data: "" });
     }
-    console.log("NO ERROR IN REQ BODY");
     const company = req.user;
     if (!company) {
-      console.log("NO USER FOUND IN HEADER");
       return res.status(400).json({ status: 400, message: "CompanyId not found in request", data: "" })
     }
     const companyQuery = {
@@ -457,34 +447,25 @@ exports.sheet = async (req, res) => {
     }
     const companyDetails = await Company.findOne(companyQuery);
     if (!companyDetails) {
-      console.log("COMPANY NOT FOUND");
       return res.status(404).json({ status: 404, message: "No company found", data: "" })
     }
-    console.log("COMPANY FOUND");
     if (!companyDetails.isActive) {
-      console.log("COMPANY NOT ACTIVE");
       return res.status(400).json({ status: 400, message: "Subscription Ended. Please contact admin", data: "" })
     }
-    console.log("COMPANY ACTIVE");
     const startDate = (new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").startOf('month').format("YYYY-MM-DD"))).toLocaleDateString().split("/")[1];
     const endDate = (new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").endOf('month').format("YYYY-MM-DD"))).toLocaleDateString().split("/")[1];
-    console.log("START DATE CREATED", startDate);
-    console.log("END DATE CREATED", endDate);
     const dateArray = [];
     for (let index = startDate; index <= endDate; index++) {
       dateArray.push(`${index}-${req.body.month}-${req.body.year}`)
     }
-    console.log("DATE ARRAY CREATED", dateArray);
     const conditions = {
       isDeleted: false,
       company: ObjectId(company)
     }
     const employeeList = await Employee.aggregate([{$match: conditions}]);
     if(!employeeList.length) {
-      console.log("NO EMPLOYEE EXISTS");
       return res.status(400).json({status:400, message: "No employee found", data: ""})   
     }
-    console.log("EMPLOYEE EXISTS");
     const attendanceSheetArray = [];
     for (const date of dateArray) {
       for (const employee of employeeList) {
@@ -498,19 +479,7 @@ exports.sheet = async (req, res) => {
         attendanceSheetArray.push(obj)
       }
     }
-    console.log("ATTENDANCE ARRAY CREATED", attendanceSheetArray);
-    return res.status(200).json({status:200, message: "Attendance sheet data generated", data: attendanceSheetArray}); 
-    // const sheetData = XLSX.utils.json_to_sheet(attendanceSheetArray);
-    // console.log("SHEET DATA CREATED", sheetData);
-    // const workbook = XLSX.utils.book_new();
-    // XLSX.utils.book_append_sheet(workbook, sheetData, `${req.body.month}-${req.body.year}`);
-    // const sheet=XLSX.write(workbook,{bookType: "xlsx",type:"buffer"});
-    // console.log("SHEET BUFFER CREATED", sheet);
-    // res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    // res.setHeader("Content-Disposition", `attachment; filename=ATTENDANCE_SHEET_${req.body.month}.xlsx`);
-    // res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-    // console.log("BUFFER SENT");
-    // res.status(200).send(sheet);
+    return res.status(200).json({status:200, message: "Attendance sheet data generated", data: [{year: req.body.year, month: req.body.month, list: attendanceSheetArray}]}); 
   } catch (error) {
     return res.status(400).json({status:400, message: "Error while generating attendance sheet", data: ""}); 
   }
