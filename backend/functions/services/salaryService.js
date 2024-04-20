@@ -499,17 +499,18 @@ exports.sheet = async (req, res) => {
       }
     }
     console.log("ATTENDANCE ARRAY CREATED", attendanceSheetArray);
-    const sheetData = XLSX.utils.json_to_sheet(attendanceSheetArray);
-    console.log("SHEET DATA CREATED", sheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, sheetData, `${req.body.month}-${req.body.year}`);
-    const sheet=XLSX.write(workbook,{bookType: "xlsx",type:"buffer"});
-    console.log("SHEET BUFFER CREATED", sheet);
-    res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", `attachment; filename=ATTENDANCE_SHEET_${req.body.month}.xlsx`);
-    res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-    console.log("BUFFER SENT");
-    res.status(200).send(sheet);
+    return res.status(200).json({status:200, message: "Attendance sheet data generated", data: attendanceSheetArray}); 
+    // const sheetData = XLSX.utils.json_to_sheet(attendanceSheetArray);
+    // console.log("SHEET DATA CREATED", sheetData);
+    // const workbook = XLSX.utils.book_new();
+    // XLSX.utils.book_append_sheet(workbook, sheetData, `${req.body.month}-${req.body.year}`);
+    // const sheet=XLSX.write(workbook,{bookType: "xlsx",type:"buffer"});
+    // console.log("SHEET BUFFER CREATED", sheet);
+    // res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    // res.setHeader("Content-Disposition", `attachment; filename=ATTENDANCE_SHEET_${req.body.month}.xlsx`);
+    // res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+    // console.log("BUFFER SENT");
+    // res.status(200).send(sheet);
   } catch (error) {
     return res.status(400).json({status:400, message: "Error while generating attendance sheet", data: ""}); 
   }
