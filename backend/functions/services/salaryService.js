@@ -505,11 +505,11 @@ exports.sheet = async (req, res) => {
     XLSX.utils.book_append_sheet(workbook, sheetData, `${req.body.month}-${req.body.year}`);
     const sheet=XLSX.write(workbook,{bookType: "xlsx",type:"buffer"});
     console.log("SHEET BUFFER CREATED", sheet);
+    res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename=ATTENDANCE_SHEET_${req.body.month}.xlsx`);
     res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-    res.set("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     console.log("BUFFER SENT");
-    res.send(Buffer.from(sheet, "binary"));
+    res.status(200).send(sheet.toString('base64'));
   } catch (error) {
     return res.status(400).json({status:400, message: "Error while generating attendance sheet", data: ""}); 
   }
