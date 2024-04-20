@@ -468,8 +468,10 @@ exports.sheet = async (req, res) => {
     console.log("COMPANY ACTIVE");
     const startDate = new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").startOf('month').format("YYYY-MM-DD")).toLocaleDateString().split("/")[0];
     const endDate = new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").endOf('month').format("YYYY-MM-DD")).toLocaleDateString().split("/")[0];
-    console.log("START DATE CREATED", startDate);
-    console.log("END DATE CREATED", endDate);
+    console.log("START DATE CREATED LOCALDATE", new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").startOf('month').format("YYYY-MM-DD")).toLocaleDateString());
+    console.log("START DATE CREATED", new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").startOf('month').format("YYYY-MM-DD")));
+    console.log("END DATE CREATED LOCALDATE", new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").endOf('month').format("YYYY-MM-DD")).toLocaleDateString());
+    console.log("END DATE CREATED", new Date(moment(req.body.year+"-"+req.body.month, "YYYY-MM").endOf('month').format("YYYY-MM-DD")));
     const dateArray = [];
     for (let index = startDate; index <= endDate; index++) {
       dateArray.push(`${index}-${req.body.month}-${req.body.year}`)
