@@ -386,35 +386,7 @@ exports.report = async (req, res) => {
       salaryData.push(obj);
     }
     if(req.params.fileType == "PDF") {
-      const pdfData = {
-        company: companyDetails.companyName.toUpperCase(),
-        month: salaryDetail[0].month,
-        year: salaryDetail[0].year,
-        salaryData: salaryData
-      }
-      const browser = await puppeteer.launch(puppeteerOptions);
-      const page = await browser.newPage();
-      const labelHtml = fs.readFileSync(templateFile, 'utf8');
-      handlebars.registerHelper('splitArray', function(array) {
-        var result = [[], []];
-        for (var i = 0; i < array.length; i++) {
-          result[i % 2].push(array[i]);
-        }
-        return result;
-      });
-      const template = handlebars.compile(labelHtml);
-      const html = template(pdfData);
-      await page.setContent(html, {
-          waitUntil: ['domcontentloaded', 'networkidle0', 'load']
-      })
-      const pdfBuffer = await page.pdf({
-          format: 'A4',
-      });
-      res.setHeader("Content-Disposition", `attachment; filename=SALARY_REPORT ${salaryDetail[0].month}-${salaryDetail[0].year}.pdf`);
-      res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
-      res.set("Content-Type", "application/pdf");
-      await browser.close();
-      res.send(pdfBuffer);
+      return res.status(200).json({status:200, message: "Salary report data generated", data: [{year: salaryDetail[0].year, month: salaryDetail[0].month, company: companyDetails.companyName.toUpperCase(), list: salaryData}]});
     }
     if (req.params.fileType == "XLSX") {
       for (const data of salaryData) {
