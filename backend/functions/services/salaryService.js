@@ -1,6 +1,7 @@
 const XLSX = require('xlsx');
 const handlebars = require("handlebars");
-const puppeteer = require('puppeteer');
+const chromium = require("@sparticuz/chromium");
+const puppeteer = require('puppeteer-core');
 const Company = require('../models/company');
 const Employee = require('../models/employee');
 const AdvanceSalary = require('../models/advanceSalary');
@@ -13,9 +14,10 @@ const fs = require('fs');
 const templateFile =  path.join(__dirname, '..', 'templates', 'index.html');
 
 const puppeteerOptions = {
-  headless: true,
-  executablePath: null,
-  args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+  args: chromium.args,
+  defaultViewport: chromium.defaultViewport,
+  executablePath: await chromium.executablePath(),
+  headless: chromium.headless,
 };
 
 exports.list = async (req, res) => {
