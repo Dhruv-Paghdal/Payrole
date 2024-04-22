@@ -1,7 +1,6 @@
 const XLSX = require('xlsx');
 const handlebars = require("handlebars");
-// const chromium = require("@sparticuz/chromium");
-// const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const Company = require('../models/company');
 const Employee = require('../models/employee');
 const AdvanceSalary = require('../models/advanceSalary');
@@ -12,14 +11,6 @@ const path = require('path');
 const moment = require('moment');
 const fs = require('fs');
 const templateFile =  path.join(__dirname, '..', 'templates', 'index.html');
-
-// const puppeteerOptions = {
-//   args: chromium.args,
-//   defaultViewport: chromium.defaultViewport,
-//   executablePath: await chromium.executablePath(),
-//   headless: chromium.headless,
-//   ignoreHTTPSErrors: true,
-// };
 
 exports.list = async (req, res) => {
   try {
@@ -395,10 +386,14 @@ exports.report = async (req, res) => {
       //   year: salaryDetail[0].year,
       //   salaryData: salaryData
       // }
+      // const puppeteerOptions = {
+      //   headless: true,
+      //   executablePath: null,
+      //   args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage']
+      // };
       // const browser = await puppeteer.launch(puppeteerOptions);
       // const page = await browser.newPage();
       // const labelHtml = fs.readFileSync(templateFile, 'utf8');
-      // console.log("Template read successfull", labelHtml);
       // handlebars.registerHelper('splitArray', function(array) {
       //   var result = [[], []];
       //   for (var i = 0; i < array.length; i++) {
@@ -418,7 +413,7 @@ exports.report = async (req, res) => {
       // res.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
       // res.set("Content-Type", "application/pdf");
       // await browser.close();
-      // res.status(200).send(JSON.stringify({data: pdfBuffer.toString('base64')}));
+      // // res.status(200).send(JSON.stringify({data: pdfBuffer.toString('base64')}));
       return res.status(200).json({status:200, message: "Salary report data generated", data: [{year: salaryDetail[0].year, month: salaryDetail[0].month, company: companyDetails.companyName.toUpperCase(), list: salaryData}]});
     }
     if (req.params.fileType == "XLSX") {
