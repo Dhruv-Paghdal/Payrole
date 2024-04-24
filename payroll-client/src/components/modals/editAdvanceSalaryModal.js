@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -8,10 +8,12 @@ import moment from 'moment';
 import PayrollContext from '../../context/payrollContext';
 import { useForm } from "react-hook-form"; 
 import { editAdvanceSalary } from '../../services/salaryService';
+import Spinner from 'react-bootstrap/esm/Spinner';
 
 const EditAdvanceSalaryModal = (props) => {
     const propData = props.modalData[0];
     const context = useContext(PayrollContext);
+    const [loading, setLoading] = useState(false);
     const {setAlertData, setAlertShow, setAlertVariant, setModalShow, setRefresh} = context;
     const { register, handleSubmit, formState: { errors }} = useForm({
         defaultValues: {
@@ -23,6 +25,7 @@ const EditAdvanceSalaryModal = (props) => {
         }
     });
     const onSubmit = async(formData) => {
+        setLoading(true);
         const payload = {
             advanveSalaryID: propData?._id,
             amount: formData.amount,
@@ -37,6 +40,7 @@ const EditAdvanceSalaryModal = (props) => {
             setAlertVariant("success");
             setRefresh(true);
         }
+        setLoading(false);
         setAlertShow(true);
         setAlertData(message);
         setModalShow(false);
@@ -73,9 +77,19 @@ const EditAdvanceSalaryModal = (props) => {
                         <p className="pt-2 mb-0" style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.type && errors.type.message} </p>
                     </Col>
                 </Row>
-                <Row className="mb-3">
+                <Row>
                     <Col><Form.Label>Date</Form.Label></Col>
                     <Col><Form.Control type="date" style={{background: "#FFFFFF"}} {...register("date", { valueAsDate: true, required: {value: true, message: "Date is required"}})} /><p className="pt-2 mb-0" style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.date && errors.date.message}</p> </Col>
+                </Row>
+                <Row className='my-2'>
+                    <Col></Col>
+                    <Col>
+                    {loading && <div className='text-center'>
+                        <Spinner animation="border" role="status" variant="primary">
+                            <span className="visually-hidden">Loading...</span>
+                        </Spinner>
+                    </div>}
+                    </Col>
                 </Row>
                 <Row>
                     <Col></Col>

@@ -1,8 +1,9 @@
 import React, {useState, useContext, useEffect} from 'react';
+import * as XLSX from 'xlsx';
 import { useForm } from "react-hook-form";
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
-import {CalendarCheck, InfoCircle, ThreeDots, CurrencyRupee, FiletypeXlsx, FiletypePdf, Trash} from 'react-bootstrap-icons';
+import {CalendarCheck, InfoCircle, ThreeDots, CurrencyRupee, FiletypeXlsx, Trash} from 'react-bootstrap-icons';
 import Pagination from 'react-bootstrap/Pagination';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Table from 'react-bootstrap/Table';
@@ -10,8 +11,8 @@ import AppModal from './modal';
 import { modalTypeEnum, deleteTypeEnum } from '../constValue';
 import PayrollContext from '../context/payrollContext';
 import { workingYearList, salaryList, reportDownload } from '../services/dashboardService';
-import { saveAs } from 'file-saver';
 import './css/dashboard.css';
+import Spinner from 'react-bootstrap/esm/Spinner';
 
 const Dashboard = () => {
   const context = useContext(PayrollContext);
@@ -19,6 +20,7 @@ const Dashboard = () => {
   const [workingYearListData, setWorkingYearList] = useState([]);
   const [curr, set_Curr] = useState(1);  
   const [totalPage, setTotalPage] = useState(1);  
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState([]); 
   const { register, handleSubmit} = useForm();
   const handleModal = (type, id) => {
@@ -129,16 +131,11 @@ const Dashboard = () => {
     }
     else{
       if(type === "XLSX") {
-        let blob = new Blob([data], {
-            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        saveAs(blob, `SALARY_REPORT.xlsx`);
-      }
-      else{
-        let blob = new Blob([data], {
-          type: "application/pdf",
-        });
-        saveAs(blob, `SALARY_REPORT.pdf`);
+        const newData = data.data;
+        const sheetData = XLSX.utils.json_to_sheet(newData[0].list);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, sheetData, `SALARY_${newData[0].month}`);
+        XLSX.writeFile(workbook,`SALARY_REPORT ${newData[0].month}-${newData[0].year}.xlsx`);
       }
     }
   }
@@ -167,6 +164,7 @@ const Dashboard = () => {
   useEffect(() => {
     if (payload.working_year) {
       (async () => {
+        setLoading(true);
         const { success, data, message } = await salaryList(payload);
         if (!success) {
           setAlertVariant("danger");
@@ -182,6 +180,7 @@ const Dashboard = () => {
             setTotalPage(1);
           }
         }
+        setLoading(false);
       })();
     }
     else{
@@ -240,7 +239,15 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody style={{textAlign: "left"}}>
-              {data.length > 0 ? data.map((data, index)=>{
+              {loading ? <tr>
+              <td colSpan={5}>
+              <div className='text-center'>
+                  <Spinner animation="border" role="status" variant="primary">
+                      <span className="visually-hidden">Loading...</span>
+                  </Spinner>
+              </div>
+              </td>
+            </tr> : data.length > 0 ? data.map((data, index)=>{
                 return <tr key={data._id}>
                   <td>
                     {data.month}
@@ -270,7 +277,6 @@ const Dashboard = () => {
                         <Dropdown.Header>Action</Dropdown.Header>
                         <Dropdown.Item onClick={()=>{handleModal(modalTypeEnum.delete_data, data._id)}}><Trash color='red'/> Delete</Dropdown.Item>
                         <Dropdown.Header>Download</Dropdown.Header>
-                        <Dropdown.Item onClick={()=>{handleReportDownload(data._id, "PDF")}}><FiletypePdf color='red'/> PDF</Dropdown.Item>
                         <Dropdown.Item onClick={()=>{handleReportDownload(data._id, "XLSX")}}><FiletypeXlsx color='#198754'/> EXCEL</Dropdown.Item>
                       </Dropdown.Menu>
                     </Dropdown>
@@ -278,9 +284,9 @@ const Dashboard = () => {
                 </tr>
               }) : <tr>
               <td colSpan={5}>
-                <div className='text-center'>
-                  No data to display
-                </div>
+              <div className='text-center'>
+              No data to display
+              </div>
               </td>
             </tr>}
             </tbody>

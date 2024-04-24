@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useState} from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -7,10 +7,12 @@ import Button from 'react-bootstrap/esm/Button';
 import {useForm} from "react-hook-form";
 import { allEmployeeIncrement, employeeIncrement } from '../../services/employeeService';
 import PayrollContext from '../../context/payrollContext';
+import Spinner from 'react-bootstrap/esm/Spinner';
 
 const EmployeeIncrementModal = (props) => {
     const employeeData = props.modalData;
     const context = useContext(PayrollContext);
+    const [loading, setLoading] = useState(false);
     const {setAlertData, setAlertShow, setAlertVariant, setModalShow, setRefresh} = context;
     const { register, handleSubmit, formState: { errors }} = useForm({
         defaultValues: {
@@ -19,6 +21,7 @@ const EmployeeIncrementModal = (props) => {
         }
     });
     const onSubmit = async(payload) => {
+        setLoading(true);
         delete payload.employee_id;
         delete payload.employee_name;
         if(props.individual){
@@ -48,6 +51,7 @@ const EmployeeIncrementModal = (props) => {
             setAlertData(message);
             setModalShow(false);
         }
+        setLoading(false);
     }
   return (
     <>
@@ -75,9 +79,19 @@ const EmployeeIncrementModal = (props) => {
                         </Row>
                     </Col>
                 </Row>
-                <Row className="mb-3">
+                <Row>
                     <Col><Form.Label>Increment value</Form.Label></Col>
                     <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("appraisal_value",{required: {value: true, message: "Increment value is requried"}, minLength: {value: 1, message: "Minimum 1 digits required"}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.appraisal_value && errors.appraisal_value.message}</p></Col>
+                </Row>
+                <Row className='my-2'>
+                    <Col></Col>
+                    <Col>
+                    {loading && <div className='text-center'>
+                        <Spinner animation="border" role="status" variant="primary">
+                            <span className="visually-hidden">Loading...</span>
+                        </Spinner>
+                    </div>}
+                    </Col>
                 </Row>
                 <Row>
                     <Col></Col>

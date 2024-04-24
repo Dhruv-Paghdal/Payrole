@@ -8,9 +8,9 @@ export const attendaneSheetDownload = async(payload) => {
             headers: {
                 authorization: localStorage.getItem("token")
             },
-            responseType: "blob"
+            // responseType: "blob"
         });
-        return {success: true, status: res.status, data: res.data , message: res.statusText}
+        return {success: true, status: res.status, data: res.data.data , message: res.statusText}
     } catch (error) {
         if (!error.response) {
             return {success: false, status: 503, message: 'Error: Network Error', data: ""}
@@ -75,8 +75,7 @@ export const reportDownload = async(payload) => {
         const res = await axios.get(`${baseUrl}/salary/${payload.id}/report/${payload.type}`, {
             headers: {
                 authorization: localStorage.getItem("token")
-            },
-            responseType: "blob"
+            }
         });
         return {success: true, status: res.status, data: res.data , message: res.statusText}
     } catch (error) {

@@ -11,6 +11,7 @@ import PayrollContext from '../context/payrollContext';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { modalTypeEnum, deleteTypeEnum } from '../constValue';
 import { advanceSalaryList } from '../services/salaryService';
+import Spinner from 'react-bootstrap/esm/Spinner';
 import './css/salary.css';
 
 const Salary = () => {
@@ -19,6 +20,7 @@ const Salary = () => {
     const [advanceSalaryListData, setAdvanceSalaryListData] = useState([])
     const { register, handleSubmit} = useForm();
     const [callEffect, setCallEffect] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [curr, set_Curr] = useState(1);  
     const [totalPage, setTotalPage] = useState(1);  
     const handleModal = (type, data) => {
@@ -111,6 +113,7 @@ const Salary = () => {
     useEffect(() => {
         if(callEffect){
             (async()=>{
+              setLoading(true);
               const { success, status, data, message} = await advanceSalaryList(filterPayload);
               if (!success) {
                 setAlertVariant("danger");
@@ -126,6 +129,7 @@ const Salary = () => {
                   setTotalPage(1);
                 }
               }
+              setLoading(false);
             })()
             setRefresh(false);
         }
@@ -191,8 +195,15 @@ const Salary = () => {
                             </tr>
                         </thead>
                         <tbody style={{textAlign: "left"}}>
-                            {
-                                advanceSalaryListData?.length > 0 ? advanceSalaryListData.map((ele)=>{
+                            {loading ? <tr>
+                        <td colSpan={6}>
+                            <div className='text-center'>
+                                <Spinner animation="border" role="status" variant="primary">
+                                    <span className="visually-hidden">Loading...</span>
+                                </Spinner>
+                            </div>
+                        </td>
+                        </tr> : advanceSalaryListData?.length > 0 ? advanceSalaryListData.map((ele)=>{
                                     return <tr key={ele._id}>
                                         <td>{(ele?.employeeDetail[0]?.name?.split(" ")?.length > 1) ? (ele?.employeeDetail[0]?.name?.split(" ")[0]?.charAt(0)?.toUpperCase() + ele?.employeeDetail[0]?.name?.split(" ")[0]?.slice(1)?.toLowerCase() + " " + ele?.employeeDetail[0]?.name?.split(" ")[1]?.charAt(0)?.toUpperCase() + ele?.employeeDetail[0]?.name?.split(" ")[1]?.slice(1)?.toLowerCase()) : (ele?.employeeDetail[0]?.name?.charAt(0)?.toUpperCase() + ele?.employeeDetail[0]?.name?.slice(1)?.toLowerCase())}</td>
                                         <td>{ele?.employeeDetail[0]?.employeeId}</td>
@@ -215,11 +226,10 @@ const Salary = () => {
                                 <tr>
                                 <td colSpan={5}>
                                     <div className='text-center'>
-                                    No data to display
+                                        No data to display
                                     </div>
                                 </td>
-                                </tr>
-                            }
+                                </tr>}
                         </tbody>
                     </Table>
                 </div>

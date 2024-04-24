@@ -1,4 +1,4 @@
-import React, {useContext, useEffect} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import Modal from 'react-bootstrap/Modal';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -7,14 +7,17 @@ import Button from 'react-bootstrap/esm/Button';
 import { useForm, Controller } from "react-hook-form";
 import { calculateSalary } from '../../services/salaryService';
 import { companyId } from '../../services/indexService';
+import Spinner from 'react-bootstrap/esm/Spinner';
 import PayrollContext from '../../context/payrollContext';
 
 const CalculateSalaryModal = () => {
     const context = useContext(PayrollContext);
+    const [loading, setLoading] = useState(false);
     const {setAlertData, setAlertShow, setAlertVariant, setModalShow, setRefresh} = context;
     const { register, handleSubmit, formState: { errors }, control, setValue} = useForm();
     const onSubmit = async(formData) => {
         const payload = new FormData();
+        setLoading(true);
         for (const key in formData) {
             if (key === "file") {
                 payload.append(key, formData[key][0]);
@@ -46,6 +49,7 @@ const CalculateSalaryModal = () => {
                 setRefresh(true);
             }
         }
+        setLoading(false);
     }
     useEffect(() => {
         (async()=>{
@@ -79,7 +83,7 @@ const CalculateSalaryModal = () => {
                     <Col><Form.Label>Working year</Form.Label></Col>
                     <Col><Form.Control type="text" placeholder="" disabled {...register("working_year")}/></Col>
                 </Row>
-                <Row className="mb-3">
+                <Row>
                     <Col><Form.Label>Attendance sheet</Form.Label></Col>
                     <Col>
                         <Controller
@@ -91,11 +95,35 @@ const CalculateSalaryModal = () => {
                                 <input type="file" {...field} value={value?.fileName}
                                 onChange={(event) => {
                                     onChange(event.target.files[0]);
-                                }} style={{background: "#FFFFFF"}}/>
+                                }} style={{
+                                    "backgroundColor": "rgb(255, 255, 255)",
+                                    "display": "block",
+                                    "width": "100%",
+                                    "padding":" 0.375rem 0.75rem 0.375rem 0rem",
+                                    "fontSize": "1rem",
+                                    "fontWeight": "400",
+                                    "lineHeight": "1.5",
+                                    "color": "var(--bs-body-color)",
+                                    "appearance": "none",
+                                    "backgroundClip": "padding-box",
+                                    "border": "var(--bs-border-width) solid var(--bs-border-color)",
+                                    "borderRadius": "var(--bs-border-radius)",
+                                    "transition": "border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out",
+                                }}/>
                             );
                             }}
                         />
                         <p className="pt-2 mb-0" style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.sheet && errors.sheet.message}</p>
+                    </Col>
+                </Row>
+                <Row className='my-2'>
+                    <Col></Col>
+                    <Col>
+                    {loading && <div className='text-center'>
+                        <Spinner animation="border" role="status" variant="primary">
+                            <span className="visually-hidden">Loading...</span>
+                        </Spinner>
+                    </div>}
                     </Col>
                 </Row>
                 <Row>

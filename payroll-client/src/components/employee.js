@@ -11,12 +11,14 @@ import AppModal from './modal';
 import PayrollContext from '../context/payrollContext';
 import { modalTypeEnum, deleteTypeEnum } from '../constValue';
 import { employeeList } from '../services/employeeService';
+import Spinner from 'react-bootstrap/esm/Spinner';
 
 const Employee = () => {
     const context = useContext(PayrollContext);
     const { setModalShow, setModalType, setModalData,  setAlertData, setAlertShow, setAlertVariant, setFilterPayload, refresh, setRefresh, filterPayload, setDeleteType} = context;
     const [totalPage, setTotalPage] = useState(1);  
     const [callEffect, setCallEffect] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]); 
     const [curr, set_Curr] = useState(1);
     const { register, handleSubmit} = useForm();
@@ -116,23 +118,25 @@ const Employee = () => {
     useEffect(() => {
         if(callEffect){
             (async()=>{
+              setLoading(true);
               const { success, data, message } = await employeeList(filterPayload);
               if (!success) {
-                setAlertVariant("danger");
-                setAlertShow(true);
-                setAlertData(message);
-              } else {
-                if (data.length) {
-                  setData(data[0].list);
-                  setTotalPage(parseInt(data[0].page.split(" ")[2]));
+                  setAlertVariant("danger");
+                  setAlertShow(true);
+                  setAlertData(message);
                 } else {
-                  setData([]);
-                  set_Curr(1);
-                  setTotalPage(1);
+                    if (data.length) {
+                        setData(data[0].list);
+                        setTotalPage(parseInt(data[0].page.split(" ")[2]));
+                    } else {
+                        setData([]);
+                        set_Curr(1);
+                        setTotalPage(1);
+                    }
                 }
-              }
+                setRefresh(false);
+                setLoading(false);
             })()
-            setRefresh(false);
         }
     }, [refresh, filterPayload])
     useEffect(()=>{
@@ -191,7 +195,15 @@ const Employee = () => {
                             </tr>
                         </thead>
                         <tbody style={{textAlign: "left"}}>
-                        {data.length > 0 ? data.map((data, index)=>{
+                        {loading ? <tr>
+                        <td colSpan={6}>
+                            <div className='text-center'>
+                                <Spinner animation="border" role="status" variant="primary">
+                                    <span className="visually-hidden">Loading...</span>
+                                </Spinner>
+                            </div>
+                        </td>
+                        </tr> : data.length > 0 ? data.map((data, index)=>{
                             return <tr key={data._id}>
                             <td>
                                 {data.employeeId}

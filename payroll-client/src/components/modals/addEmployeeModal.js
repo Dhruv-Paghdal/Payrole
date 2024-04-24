@@ -7,12 +7,15 @@ import Button from 'react-bootstrap/esm/Button';
 import PayrollContext from '../../context/payrollContext';
 import {useForm} from "react-hook-form";
 import { addEmployee } from '../../services/employeeService';
+import Spinner from 'react-bootstrap/esm/Spinner';
 
 const AddEmployeeModal = () => {
     const context = useContext(PayrollContext);
+    const [loading, setLoading] = useState(false);
     const {setAlertData, setAlertShow, setAlertVariant, setModalShow, setRefresh} = context;
     const { register, handleSubmit, formState: { errors }} = useForm();
     const onSubmit = async(payload) => {
+        setLoading(true);
         if(!payload.email){
             delete payload.email
         }
@@ -27,6 +30,7 @@ const AddEmployeeModal = () => {
         setAlertShow(true);
         setAlertData(message);
         setModalShow(false);
+        setLoading(false);
     }
   return (
     <>
@@ -69,9 +73,19 @@ const AddEmployeeModal = () => {
                     <Col><Form.Label>Travel allowance</Form.Label></Col>
                     <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("travel_allowance",{required: {value: true, message: "Employee travel allowace is requried", minLength: {value: 1, message: "Minimum 1 digit required"}}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.travel_allowance && errors.travel_allowance.message}</p></Col>
                 </Row>
-                <Row className="mb-3">
+                <Row>
                     <Col><Form.Label>Overtime percentage</Form.Label></Col>
                     <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("over_time_wage_percentage",{required: {value: true, message: "Employee overtime percentage is requried", minLength: {value: 1, message: "Minimum 1 digit required"}}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.over_time_wage_percentage && errors.over_time_wage_percentage.message}</p></Col>
+                </Row>
+                <Row className='my-2'>
+                    <Col></Col>
+                    <Col>
+                    {loading && <div className='text-center'>
+                        <Spinner animation="border" role="status" variant="primary">
+                            <span className="visually-hidden">Loading...</span>
+                        </Spinner>
+                    </div>}
+                    </Col>
                 </Row>
                 <Row>
                     <Col></Col>

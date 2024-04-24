@@ -10,6 +10,7 @@ import { deleteTypeEnum } from '../../constValue';
 import { deleteEmployee } from '../../services/employeeService';
 import { deleteSalaryReport } from '../../services/dashboardService';
 import { deleteAdvanceSalary } from '../../services/salaryService';
+import Spinner from 'react-bootstrap/esm/Spinner';
 
 const DeleteModal = (props) => {
     const data = props.modalData;
@@ -20,10 +21,12 @@ const DeleteModal = (props) => {
         label: ""
 
     });
+    const [loading, setLoading] = useState(false);
     const context = useContext(PayrollContext);
     const {setAlertData, setAlertShow, setAlertVariant, setModalShow, setRefresh} = context;
     const handleDelete = async(payload) => {
         let responseSuccess, responseMessage;
+        setLoading(true);
         if(type === deleteTypeEnum.salary_detial){
             const {success, status, data, message} = await deleteSalaryReport(payload);
             responseSuccess = success;
@@ -46,6 +49,7 @@ const DeleteModal = (props) => {
             setAlertVariant("success");
             setRefresh(true);
         }
+        setLoading(false);
         setAlertShow(true);
         setAlertData(responseMessage);
         setModalShow(false);
@@ -87,6 +91,11 @@ const DeleteModal = (props) => {
             <Row className="mb-3">
                 <Col>
                     <Row>
+                        <Col>
+                        {loading && <Spinner animation="border" role="status" variant="danger">
+                            <span className="visually-hidden">Loading...</span>
+                        </Spinner>}
+                        </Col>
                         <Col><Button variant='danger' type='submit' onClick={()=>handleDelete(data._id)}>Delete</Button></Col>
                         <Col><Button onClick={()=>{handleClose()}}>Cancle</Button></Col>
                     </Row>

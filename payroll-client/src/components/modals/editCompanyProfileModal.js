@@ -8,9 +8,11 @@ import { PlusLg, DashLg } from 'react-bootstrap-icons'
 import PayrollContext from '../../context/payrollContext';
 import {useForm} from "react-hook-form";
 import { editCompanyProfile } from '../../services/profileService';
+import Spinner from 'react-bootstrap/esm/Spinner';
 
 const EditCompanyProfileModal = (props) => {
   const companyData = props.modalData;
+  const [loading, setLoading] = useState(false);
   const [ownerDetailArray, setOwnerDetailArray] = useState([{ name: "", mobile: "", email: ""}]);
   const {register, formState: {errors}, handleSubmit} = useForm({
     defaultValues: {
@@ -30,6 +32,7 @@ const EditCompanyProfileModal = (props) => {
   const context = useContext(PayrollContext);
   const {setAlertData, setAlertShow, setAlertVariant, setModalShow, setRefresh} = context;
   const onSubmit = async(payload) => {
+    setLoading(true);
     if(!payload.company_name) {
       payload["company_name"] = " "
     }
@@ -54,6 +57,7 @@ const EditCompanyProfileModal = (props) => {
     setAlertShow(true);
     setAlertData(message);
     setModalShow(false);
+    setLoading(false);
   }
   useEffect(()=>{
     if(companyData?.ownerDetail?.length) {
@@ -242,6 +246,15 @@ const EditCompanyProfileModal = (props) => {
               </Row>
             ))
           }
+          <Row className='my-2'>
+            <Col>
+            {loading && <div className='text-center'>
+                <Spinner animation="border" role="status" variant="primary">
+                    <span className="visually-hidden">Loading...</span>
+                </Spinner>
+            </div>}
+            </Col>
+          </Row>
           <Row>
               <Col lg={true}><Button type='submit' className='w-100'>Edit</Button></Col>
           </Row>

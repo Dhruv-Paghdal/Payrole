@@ -9,7 +9,6 @@
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.6.8",
     "bootstrap": "^5.3.3",
-    "file-saver": "^2.0.5",
     "moment": "^2.30.1",
     "react": "^18.2.0",
     "react-bootstrap": "^2.10.1",
@@ -22,7 +21,11 @@
     "react-scripts": "5.0.1",
     "react-select": "^5.8.0",
     "sass": "^1.71.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
+  },
+  "fallback": {
+    "path": "require.resolve('path-browserify')"
   },
   "scripts": {
     "start": "react-scripts start",

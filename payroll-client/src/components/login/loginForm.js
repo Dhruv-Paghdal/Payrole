@@ -44,7 +44,7 @@ const LoginForm = () => {
               </InputGroup>
               <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.username && errors.username.message}</p>
           </Form.Group>
-          <Form.Group className="mb-3" controlId="formBasicPassword">
+          <Form.Group controlId="formBasicPassword">
               <InputGroup className='pb-2' style={{width: "100%"}}>
                   <InputGroup.Text style={{backgroundColor: "#f1f1f1", borderTopLeftRadius: "15px", borderBottomLeftRadius:"15px"}}><LockFill color='#0d6efd'/></InputGroup.Text>
                   <Form.Control className='loginPassword' type="password" placeholder="Password *" {...register("password", { required: {value: true, message: "Password is required"},minLength: {value: 5, message: "Minimum 5 characters required"}})}/>
@@ -52,7 +52,7 @@ const LoginForm = () => {
               <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.password && errors.password.message}</p>
               <p className='py-3 m-0 text-end hoverEffect' style={{fontWeight: "bold",color: "#0d6efd"}} onClick={() => {setLoginCard(loginEnum.forgot_password)}}>Forgot Password?</p>
           </Form.Group>
-          <div className='text-center pb-3'>
+          <div className='text-center mb-3'>
             <Spinner animation="border" role="status" variant="primary" className={spinnerVisiblity}>
               <span className="visually-hidden">Loading...</span>
             </Spinner>
