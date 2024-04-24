@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/Payrole/static/css/main.5b179391.css",
-    "main.js": "/Payrole/static/js/main.20c8c657.js",
+    "main.js": "/Payrole/static/js/main.d3026293.js",
     "static/js/453.ad0e0ab6.chunk.js": "/Payrole/static/js/453.ad0e0ab6.chunk.js",
     "static/media/payrole.jpg": "/Payrole/static/media/payrole.9a3ba380fd0cab830bdf.jpg",
     "index.html": "/Payrole/index.html",
     "main.5b179391.css.map": "/Payrole/static/css/main.5b179391.css.map",
-    "main.20c8c657.js.map": "/Payrole/static/js/main.20c8c657.js.map",
+    "main.d3026293.js.map": "/Payrole/static/js/main.d3026293.js.map",
     "453.ad0e0ab6.chunk.js.map": "/Payrole/static/js/453.ad0e0ab6.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.5b179391.css",
-    "static/js/main.20c8c657.js"
+    "static/js/main.d3026293.js"
   ]
 }
