@@ -134,9 +134,9 @@ const Employee = () => {
                         setTotalPage(1);
                     }
                 }
-                setRefresh(false);
                 setLoading(false);
             })()
+            setRefresh(false);
         }
     }, [refresh, filterPayload])
     useEffect(()=>{
