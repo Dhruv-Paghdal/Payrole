@@ -24,9 +24,6 @@
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"
   },
-  "fallback": {
-    "path": "require.resolve('path-browserify')"
-  },
   "scripts": {
     "start": "react-scripts start",
     "predeploy": "npm run build",
