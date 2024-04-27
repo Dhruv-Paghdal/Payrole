@@ -150,6 +150,7 @@ const Dashboard = () => {
       }
       else{
         setWorkingYearList(data);
+        setLoading(false);
         setPayload({...payload, working_year: data[0]})
       }
     }

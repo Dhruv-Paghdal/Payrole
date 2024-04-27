@@ -37,33 +37,33 @@ const SalaryDetailModal = (props) => {
                                   <Col>{ele.totalWorkingDays} x {ele.fixedSalary}</Col>
                                   <Col className='text-success'>{(parseInt(ele.totalWorkingDays)*parseFloat(ele.fixedSalary)).toLocaleString()}</Col>
                                 </Row>
-                                {ele.totalTravelAllowance && <Row className="mb-2">
+                                {ele.totalTravelAllowance ? <Row className="mb-2">
                                     <Col className='text-dark'>Total travel allowance</Col>
                                     <Col>{ele.totalWorkingDays} x {ele.travelAllowance}</Col>
                                     <Col className='text-success'>{ele.totalTravelAllowance.toLocaleString()}</Col>
-                                </Row>}
-                                {ele.totalOverTimePeriod && <Row className="mb-2">
+                                </Row> : <></>}
+                                {ele.totalOverTimePeriod ? <Row className="mb-2">
                                     <Col className='text-dark'>Total overtime hour</Col>
                                     <Col>{ele.totalOverTimePeriod}</Col>
                                     <Col className='text-success'>{ele.OverTimeSalary.toLocaleString()}</Col>
-                                </Row>}
-                                {ele.totalOtherExpenseByCompany && <Row className="mb-2">
+                                </Row> : <></>}
+                                {ele.totalOtherExpenseByCompany ? <Row className="mb-2">
                                     <Col className='text-dark'>Expense by company</Col>
                                     <Col></Col>
                                     <Col className='text-danger'>{ele.totalOtherExpenseByCompany.toLocaleString()}</Col>
-                                </Row>}
-                                {ele.totalAdvanceSalary && <Row className="mb-2">
+                                </Row> : <></>}
+                                {ele.totalAdvanceSalary ? <Row className="mb-2">
                                     <Col className='text-dark'>Total Advance salary</Col>
                                     <Col></Col>
                                     <Col className='text-danger'>{ele.totalAdvanceSalary.toLocaleString()}</Col>
-                                </Row>}
+                                </Row> : <></>}
                                 <Row className="mb-2">
                                     <Col className='text-dark'>Final salary</Col>
                                     <Col></Col>
                                     <Col className='text-primary' style={{fontWeight: 'bold'}}>{ele.finalSalary.toLocaleString()}</Col>
                                 </Row>
                                 <hr />
-                                {ele.totalAdvanceSalary && <><Row>
+                                {ele.totalAdvanceSalary ? <><Row>
                                     <Col className='text-dark'>Advance salary list</Col>
                                     <Col>{ele.advanceList.map((advanceData)=>{
                                       return <>{advanceData.date} <br /></>
@@ -73,8 +73,8 @@ const SalaryDetailModal = (props) => {
                                     })}</Col>
                                 </Row>
                                 <hr />
-                                </>}
-                                {ele.absent && <>
+                                </> : <></>}
+                                {ele.absent ? <>
                                   <Row>
                                     <Col className='text-dark'>Absent list</Col>
                                     <Col>
@@ -88,7 +88,7 @@ const SalaryDetailModal = (props) => {
                                       ))}
                                     </Col>
                                   </Row>
-                                </>}
+                                </> : <></>}
                               </Card.Text>
                             </Card.Body>
                           </Card>
