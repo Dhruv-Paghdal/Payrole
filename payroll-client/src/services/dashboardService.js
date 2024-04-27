@@ -87,8 +87,14 @@ export const reportDownload = async(payload) => {
         if (!error.response) {
             return {success: false, status: 503, message: 'Error: Network Error', data: ""}
         } else {
-            const errMsg = JSON.parse(await error.response.data.text());
-            return {success: false, status: error.response.data.status, message:errMsg.message, data: ""}
+            let message = ""
+            const errMsg = typeof(error.response.data.message) == "object" ? (()=>{
+                for (const msg of error.response.data.message) {    
+                    message += `${msg.msg}, `
+                }
+                return message;
+            })() : error.response.data.message;
+            return {success: false, status: error.response.data.status, message:errMsg, data: ""}
         }
     }
 }
