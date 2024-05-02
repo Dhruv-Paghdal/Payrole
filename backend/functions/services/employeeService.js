@@ -163,14 +163,14 @@ exports.add = async(req, res) => {
             employeeId = companyExist.companyCode + "-" + "01"
         }
         else {
-            let number = parseInt(recentEmployee.employeeId.split("-")[1]) + 1;
+            let number = parseInt(recentEmployee.employeeId.slice(companyExist.companyCode + 1)) + 1;
             if(number < 10){
                 number = "0" + number.toString()
             }
             employeeId = companyExist.companyCode + "-" + number.toString()
         };
         const payload = {
-            name: req.body.name,
+            name: req.body.name.trim(),
             mobile: req.body.mobile,
             email: req.body.email ? req.body.email : "",
             employeeId: employeeId,
@@ -178,7 +178,6 @@ exports.add = async(req, res) => {
             degisnation: req.body.degisnation,
             wageAmount: parseInt(req.body.wage_amount),
             workingHour: parseInt(req.body.working_hour),
-            overTimeWagePercentage: parseFloat(req.body.over_time_wage_percentage),
             recessTime: parseInt(req.body.recess_time),
             travelAllowance: parseInt(req.body.travel_allowance)
         }
@@ -217,7 +216,7 @@ exports.edit = async(req, res) => {
         }
         const payload = {};
         if(req.body.name) {
-            payload["name"] = req.body.name;
+            payload["name"] = req.body.name.trim();
         }
         if(req.body.mobile) {
             payload["mobile"] = req.body.mobile;
@@ -233,9 +232,6 @@ exports.edit = async(req, res) => {
         }
         if(req.body.working_hour) {
             payload["workingHour"] = parseInt(req.body.working_hour);
-        }
-        if(req.body.over_time_wage_percentage) {
-            payload["overTimeWagePercentage"] = parseFloat(req.body.over_time_wage_percentage);
         }
         if(req.body.recess_time) {
             payload["recessTime"] = parseInt(req.body.recess_time);

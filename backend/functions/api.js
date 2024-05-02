@@ -8,6 +8,7 @@ const companyRoutes = require('./routes/company');
 const employeeRoutes = require('./routes/employee');
 const salaryRoutes = require('./routes/salary');
 const advanceSalaryRoutes = require('./routes/advanceSalary');
+const loanRoutes = require('./routes/loan');
 const miscellaneousRoutes = require('./routes/miscellaneous');
 const authMiddleware = require('./middleware/userType');
 const app = express();
@@ -28,6 +29,7 @@ app.use(authMiddleware.isAccessable());
 app.use(`${netlifyURL}/company`, companyRoutes);
 app.use(`${netlifyURL}/employee`, employeeRoutes);
 app.use(`${netlifyURL}/advance-salary`, advanceSalaryRoutes);
+app.use(`${netlifyURL}/loan`, loanRoutes);
 app.use(`${netlifyURL}/salary`, salaryRoutes);
 app.use(`${netlifyURL}/misc`, miscellaneousRoutes);
 

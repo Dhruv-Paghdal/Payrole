@@ -54,6 +54,9 @@ const salarySchema = new mongoose.Schema({
         totalAdvanceSalary: {
             type: Number,
         },
+        loan: {
+            type: Number,
+        },
         totalOtherExpenseByCompany: {
             type: Number
         }, 

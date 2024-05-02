@@ -73,10 +73,6 @@ module.exports = {
             notEmpty: true,
             errorMessage: "Working hour cannot be empty",
         },
-        over_time_wage_percentage: {
-            notEmpty: true,
-            errorMessage: "Over time wage percentage is requried"
-        },
         travel_allowance: {
             notEmpty: true,
             errorMessage: "Travel allowance is requried"
@@ -118,6 +114,26 @@ module.exports = {
         date: {
             notEmpty: true,
             errorMessage: "Advance salary date is required",
+        }
+    },
+    addLoan: {
+        employee: {
+            notEmpty: true,
+            errorMessage: "Employee is required",
+        },
+        amount: {
+            notEmpty: true,
+            errorMessage: "Loan amount is required",
+            isInt: {
+                options: {
+                    gt: 0
+                },
+                errorMessage: "Loan amount must be integer and greater than 0."
+            },
+        },
+        date: {
+            notEmpty: true,
+            errorMessage: "Loan date is required",
         }
     },
     calculateSalary: {

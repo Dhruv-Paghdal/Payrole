@@ -40,10 +40,6 @@ const employeeSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
-    overTimeWagePercentage: {
-        type: Number,
-        required: true,
-    },
     travelAllowance: {
         type: Number,
         required: true,

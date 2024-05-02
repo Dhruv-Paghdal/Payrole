@@ -4,6 +4,7 @@ const puppeteer = require('puppeteer');
 const Company = require('../models/company');
 const Employee = require('../models/employee');
 const AdvanceSalary = require('../models/advanceSalary');
+const Loan = require('../models/loans');
 const Salary = require('../models/salary');
 const ObjectId = require('mongoose').Types.ObjectId;
 const { validationResult } = require('express-validator');
@@ -122,7 +123,7 @@ exports.calculate = async (req, res) => {
         isDeleted: false,
         company: ObjectId(companyId)
     }
-    const employeeList = await Employee.findAll(employeeQuery, "_id employeeId wageAmount workingHour overTimeWagePercentage travelAllowance recessTime")
+    const employeeList = await Employee.findAll(employeeQuery, "_id employeeId wageAmount workingHour travelAllowance recessTime")
     if (!employeeList) {
       return res.status(404).json({ status: 404, message: "No employee found", data: "" });
     }
@@ -147,11 +148,31 @@ exports.calculate = async (req, res) => {
       }
     ]
     const employeeAdvanceSalary = await AdvanceSalary.aggregate(advanceSalaryPipeline);
+    const loanPipeline = [
+      {
+        $match: {
+          isDeleted: false,
+          company: ObjectId(companyId),
+          $expr: {
+            $and: [
+              {
+                $gte: ["$date", startDate],
+              },
+              {
+                $lte: ["$date", endDate],
+              },
+            ],
+          },
+        }
+      }
+    ]
+    const employeeLoan = await Loan.aggregate(loanPipeline);
     const headerMapping = {
         "EMPLOYEE_ID": 'emp_id',
         "DATE": 'date',
         "PUNCH_IN": 'in',
-        "PUNCH_OUT": 'out'
+        "PUNCH_OUT": 'out',
+        "RECESS": "recess"
     };
     const employeeData = [];
     const workbook = XLSX.read(req.file.buffer, { type: 'buffer' })
@@ -184,12 +205,18 @@ exports.calculate = async (req, res) => {
     const salaryArray = [];
     for (const employee of employeeList) {
       const advanceSalaryList = [];
+      let employeeLoanAmount = 0;
       for (const advanceSalary of employeeAdvanceSalary) {
         if (employee._id.toString() == advanceSalary.employee.toString()) { 
           advanceSalaryList.push({date: moment(advanceSalary.date).format("DD-MM-YYYY"), amount: advanceSalary.amount, _id: advanceSalary._id}) 
         }
       }
-      salaryArray.push({"employeeId": employee["employeeId"], "_id": employee["_id"],"fixedSalary": employee["wageAmount"], "fixedWorkingHour": employee["workingHour"],"overTimeWagePercentage": employee["overTimeWagePercentage"], "travelAllowance": employee["travelAllowance"], "recessTime":employee["recessTime"], "advanceSalaryList": advanceSalaryList, "leaveList": []})
+      for (const loan of employeeLoan) {
+        if (employee._id.toString() == loan.employee.toString()) { 
+          employeeLoanAmount += loan.amount
+        }
+      }
+      salaryArray.push({"employeeId": employee["employeeId"], "_id": employee["_id"],"fixedSalary": employee["wageAmount"], "fixedWorkingHour": employee["workingHour"], "travelAllowance": employee["travelAllowance"], "recessTime":employee["recessTime"], "advanceSalaryList": advanceSalaryList, "loan": employeeLoanAmount,"leaveList": []})
     }
     for (const data of salaryArray) {
         for (const employee of employeeData) {
@@ -202,14 +229,19 @@ exports.calculate = async (req, res) => {
                     const inTime = moment(employee.in, "hh:mm:ss a");
                     const outTime = moment(employee.out, "hh:mm:ss a");
                     totalHour = moment.duration(outTime.diff(inTime)).asHours();
+                    extraHour = totalHour - (data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours());
+                    if(employee?.recess > 0) {
+                      extraHour = extraHour - moment.duration(employee.recess, 'minutes').asHours();
+                    }
+                    if(extraHour < 0){
+                      totalHour = totalHour + extraHour
+                    }
                     if (totalHour >= (data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours())) {
-                      extraHour = totalHour - (data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours());
                       workingDay = 1;
                     }
                     else {
                       inCompleteHour = totalHour;
                     }
-                   
                     data["travelDays"] = data?.travelDays ? (data.travelDays + 1) : 1;
                     data["totalWorkingDays"] = data?.totalWorkingDays ? (data.totalWorkingDays + workingDay) : workingDay;
                     data["extraHour"] = parseFloat(data?.extraHour) ? parseFloat(data.extraHour) + parseFloat(extraHour) : parseFloat(extraHour)
@@ -223,27 +255,27 @@ exports.calculate = async (req, res) => {
                 }
             }
         }
-        if(data["extraHour"] && data["inCompleteHour"]) {
-          let extra = data["inCompleteHour"];
-          let fix = data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours();
-          // FINDING THE NEAREST NUMBER FOR INCOMPLETE HOUR BASED ON FIXED WOKRING HOUR
-          // extra = 15, fix = 8.5 ==> extra = 17
-          extra = extra + fix/2;
-          extra = extra - (extra%fix);
-          // CONVERTING EXTRA INTO HOUR
-          // extra = 17 ==> hour = 2
-          extra = extra / fix;
-          if (data["extraHour"] >= extra) {
-            data["extraHour"] = data["extraHour"] - extra;
-            data["inCompleteHour"] = data["inCompleteHour"] + extra;
-          }
-        }
+        // if(data["extraHour"] && data["inCompleteHour"]) {
+        //   let extra = data["inCompleteHour"];
+        //   let fix = data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours();
+        //   // FINDING THE NEAREST NUMBER FOR INCOMPLETE HOUR BASED ON FIXED WOKRING HOUR
+        //   // extra = 15, fix = 8.5 ==> extra = 17
+        //   extra = extra + fix/2;
+        //   extra = extra - (extra%fix);
+        //   // CONVERTING EXTRA INTO HOUR
+        //   // extra = 17 ==> hour = 2
+        //   extra = extra / fix;
+        //   if (data["extraHour"] >= extra) {
+        //     data["extraHour"] = data["extraHour"] - extra;
+        //     data["inCompleteHour"] = data["inCompleteHour"] + extra;
+        //   }
+        // }
         if (data["inCompleteHour"]) {
           let fix = data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours();
           data["totalWorkingDays"] = data["totalWorkingDays"] + Math.round(data["inCompleteHour"] / fix);
         }
         delete data["inCompleteHour"]
-        data["extraHour"] >= 2 ? data["extraHourSalary"] = (data["extraHour"] / 8) * data["overTimeWagePercentage"] * data["fixedSalary"]: delete data["extraHour"];
+        data["extraHour"] >= 2 ? data["extraHourSalary"] = (data["extraHour"] / 6) * data["fixedSalary"]: delete data["extraHour"];
         if (data["advanceSalaryList"]) {
           let total = 0;
           for (const advanceSalary of data["advanceSalaryList"]) {
@@ -257,9 +289,8 @@ exports.calculate = async (req, res) => {
         data["totalOther"] = data["totalWorkingDays"] * req.body.other_expense;
         data["regularSalary"] = data["totalWorkingDays"] * data["fixedSalary"];
         data["travelFair"] = data["travelDays"] * data["travelAllowance"];
-        data["finalSalary"] = (data["regularSalary"] + data["travelFair"] + (data?.extraHourSalary ? data["extraHourSalary"] : 0)) - (data["totalOther"] + data["totalAdvanceSalary"])
+        data["finalSalary"] = Math.round((data["regularSalary"] + data["travelFair"] + (data?.extraHourSalary ? data["extraHourSalary"] : 0)) - (data["totalOther"] + data["totalAdvanceSalary"] + data["loan"]))
         delete data["fixedWorkingHour"]; 
-        delete data["overTimeWagePercentage"]; 
         delete data["recessTime"]; 
         delete data["travelDays"];
     } 
@@ -274,6 +305,7 @@ exports.calculate = async (req, res) => {
         totalOverTimePeriod: data?.extraHour,
         OverTimeSalary: data?.extraHourSalary,
         totalAdvanceSalary: data?.totalAdvanceSalary,
+        loan: data?.loan,
         totalOtherExpenseByCompany: data?.totalOther,
         totalTravelAllowance: data?.travelFair,
         finalSalary: data?.finalSalary,
@@ -363,6 +395,7 @@ exports.report = async (req, res) => {
         "OVER_TIME_PERIOD": data?.totalOverTimePeriod ? data.totalOverTimePeriod : "",
         "OVER_TIME_SALARY": data?.OverTimeSalary ? data.OverTimeSalary.toLocaleString() : "",
         "ADVANCE_SALARY": data?.totalAdvanceSalary ? data.totalAdvanceSalary.toLocaleString() : "",
+        "LOAN": data?.loan ? data.loan.toLocaleString() : "",
         "COMPANY_EXPENSE": data?.totalOtherExpenseByCompany ? data.totalOtherExpenseByCompany.toLocaleString() : "",
         "TRAVEL_ALLOWANCE": data?.totalTravelAllowance ? data.totalTravelAllowance.toLocaleString() : "",
         "TRAVEL_ALLOWANCE_PER_DAY": data?.travelAllowance ? data.travelAllowance : "",
@@ -475,6 +508,7 @@ exports.sheet = async (req, res) => {
           "DATE": date,
           "PUNCH_IN": "",
           "PUNCH_OUT": "",
+          "RECESS": "",
           "NAME": (employee.name.split(" ").length > 1) ? (employee.name.split(" ")[0].charAt(0).toUpperCase() + employee.name.split(" ")[0].slice(1).toLowerCase() + " " + employee.name.split(" ")[1].charAt(0).toUpperCase() + employee.name.split(" ")[1].slice(1).toLowerCase()) : (employee.name.charAt(0).toUpperCase() + employee.name.slice(1).toLowerCase())
         }
         attendanceSheetArray.push(obj)
