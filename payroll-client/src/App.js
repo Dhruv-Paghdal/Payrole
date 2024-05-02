@@ -8,6 +8,7 @@ import Dashboard from "./components/dashboard";
 import Salary from "./components/salary";
 import Employee from "./components/employee";
 import Profile from "./components/profile";
+import Loan from "./components/loan";
 
 function App() {
   const router = createBrowserRouter([
@@ -28,6 +29,10 @@ function App() {
       }, {
         path: "salary",
         element: <Salary />,
+        errorElement: <ErrorPage />
+      }, {
+        path: "loan",
+        element: <Loan />,
         errorElement: <ErrorPage />
       }, {
         path: "employee",

@@ -57,6 +57,11 @@ const SalaryDetailModal = (props) => {
                                     <Col></Col>
                                     <Col className='text-danger'>{ele.totalAdvanceSalary.toLocaleString()}</Col>
                                 </Row> : <></>}
+                                {ele.loan ? <Row className="mb-2">
+                                    <Col className='text-dark'>Total loan</Col>
+                                    <Col></Col>
+                                    <Col className='text-danger'>{ele.loan.toLocaleString()}</Col>
+                                </Row> : <></>}
                                 <Row className="mb-2">
                                     <Col className='text-dark'>Final salary</Col>
                                     <Col></Col>

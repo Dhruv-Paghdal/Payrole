@@ -6,6 +6,8 @@ import CalculateSalaryModal from './modals/calculateSalaryModal';
 import AddAdvanceSalaryModal from './modals/addAdvanceSalaryModal';
 import SearchFilterModal from './modals/searchFilterModal';
 import EditAdvanceSalaryModal from './modals/editAdvanceSalaryModal';
+import AddLoanModal from './modals/addLoanModal';
+import EditLoanModal from './modals/editLoanModal';
 import AddEmployeeModal from './modals/addEmployeeModal';
 import EmployeeDetailModal from './modals/employeeDetailModal';
 import EditEmployeeModal from './modals/editEmployeeModal';
@@ -36,6 +38,8 @@ const AppModal = () => {
       {(modalType === modalTypeEnum.calculate_salary) && <CalculateSalaryModal />}
       {(modalType === modalTypeEnum.advance_salary) && <AddAdvanceSalaryModal />}
       {(modalType === modalTypeEnum.edit_advance_salary) && <EditAdvanceSalaryModal modalData={modalData}/>}
+      {(modalType === modalTypeEnum.loan) && <AddLoanModal />}
+      {(modalType === modalTypeEnum.edit_loan) && <EditLoanModal modalData={modalData}/>}
       {(modalType === modalTypeEnum.add_employee) && <AddEmployeeModal />}
       {(modalType === modalTypeEnum.employee_detail) && <EmployeeDetailModal modalData={modalData}/>}
       {(modalType === modalTypeEnum.edit_employee) && <EditEmployeeModal modalData={modalData}/>}

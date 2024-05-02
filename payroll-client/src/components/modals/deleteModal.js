@@ -10,6 +10,7 @@ import { deleteTypeEnum } from '../../constValue';
 import { deleteEmployee } from '../../services/employeeService';
 import { deleteSalaryReport } from '../../services/dashboardService';
 import { deleteAdvanceSalary } from '../../services/salaryService';
+import { deleteLoan } from '../../services/loanService';
 import Spinner from 'react-bootstrap/esm/Spinner';
 
 const DeleteModal = (props) => {
@@ -39,6 +40,11 @@ const DeleteModal = (props) => {
         }
         if(type === deleteTypeEnum.advance_salary){
             const {success, status, data, message} = await deleteAdvanceSalary(payload);
+            responseSuccess = success;
+            responseMessage = message;
+        }
+        if(type === deleteTypeEnum.loan){
+            const {success, status, data, message} = await deleteLoan(payload);
             responseSuccess = success;
             responseMessage = message;
         }
@@ -72,6 +78,12 @@ const DeleteModal = (props) => {
             setModalContent({
                 title: "Delete advance salary",
                 label: `Are you sure, you want to delete advance salary of ${data?.employeeId} for ${data?.date}?`
+            })
+        }
+        if(type === deleteTypeEnum.loan){
+            setModalContent({
+                title: "Delete loan",
+                label: `Are you sure, you want to delete loan of ${data?.employeeId} for ${data?.date}?`
             })
         }
     }, [])

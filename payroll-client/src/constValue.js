@@ -11,6 +11,8 @@ const modalTypeEnum = {
     calculate_salary : "calculate_salary",
     advance_salary : "advance_salary",
     edit_advance_salary : "edit_advance_salary",
+    loan : "loan",
+    edit_loan : "edit_loan",
     add_employee : "add_employee",
     employee_detail : "employee_detail",
     edit_employee : "edit_employee",
@@ -25,6 +27,7 @@ const modalTypeEnum = {
 const deleteTypeEnum = {
     salary_detial : "salary_detial",
     advance_salary : "advance_salary",
+    loan : "loan",
     employee_detail : "employee_detail"
 }
 

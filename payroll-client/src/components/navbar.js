@@ -3,7 +3,7 @@ import Container from 'react-bootstrap/Container';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import Nav from 'react-bootstrap/Nav';
 import Navbar from 'react-bootstrap/Navbar';
-import {Grid1x2, Coin, People, Person, BoxArrowLeft} from 'react-bootstrap-icons';
+import {Grid1x2, Coin, People, Person, BoxArrowLeft, Bank} from 'react-bootstrap-icons';
 import { NavLink } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import './css/navbar.css';
@@ -30,6 +30,9 @@ const AppNavbar = () => {
               <Nav.Link onClick={() => setExpanded(false)}><NavLink to="/home/salary" className='nav-link ps-2'><Coin /> <span className='ps-2'>Salary</span></NavLink></Nav.Link>
             </Nav.Item>
             <Nav.Item>
+              <Nav.Link onClick={() => setExpanded(false)}><NavLink to="/home/loan" className='nav-link ps-2'><Bank /> <span className='ps-2'>Loan</span></NavLink></Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
               <Nav.Link onClick={() => setExpanded(false)}><NavLink to="/home/employee" className='nav-link ps-2'><People /> <span className='ps-2'>Employees</span></NavLink></Nav.Link>
             </Nav.Item>
             <Nav.Item>
@@ -54,6 +57,9 @@ const AppNavbar = () => {
               </Nav.Item>
               <Nav.Item className='mb-2'>
                 <NavLink to="/home/salary" className='nav-link ps-2'><Coin /> <span className='ps-2'>Salary</span></NavLink>
+              </Nav.Item>
+              <Nav.Item className='mb-2'>
+                <NavLink to="/home/loan" className='nav-link ps-2'><Bank /> <span className='ps-2'>Loan</span></NavLink>
               </Nav.Item>
               <Nav.Item className='mb-2'>
                 <NavLink to="/home/employee" className='nav-link ps-2'><People /> <span className='ps-2'>Employees</span></NavLink>
