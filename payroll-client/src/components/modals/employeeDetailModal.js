@@ -48,10 +48,6 @@ const EmployeeDetailModal = (props) => {
                 <Col style={{fontWeight: "500"}}>Travel allowance</Col>
                 <Col><CurrencyRupee /> {data?.travelAllowance}</Col>
             </Row>
-            <Row className='mb-3'>
-                <Col style={{fontWeight: "500"}}>Overtime percentage</Col>
-                <Col>{data?.overTimeWagePercentage} %</Col>
-            </Row>
         </Modal.Body>
     </>
   )

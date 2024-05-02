@@ -73,10 +73,6 @@ const AddEmployeeModal = () => {
                     <Col><Form.Label>Travel allowance</Form.Label></Col>
                     <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("travel_allowance",{required: {value: true, message: "Employee travel allowace is requried", minLength: {value: 1, message: "Minimum 1 digit required"}}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.travel_allowance && errors.travel_allowance.message}</p></Col>
                 </Row>
-                <Row>
-                    <Col><Form.Label>Overtime percentage</Form.Label></Col>
-                    <Col><Form.Control type="tel" style={{background: "#FFFFFF"}} placeholder="" {...register("over_time_wage_percentage",{required: {value: true, message: "Employee overtime percentage is requried", minLength: {value: 1, message: "Minimum 1 digit required"}}})}/> <p style={{fontSize: "13px", textAlign: "left", color: "#6c8080"}}> {errors.over_time_wage_percentage && errors.over_time_wage_percentage.message}</p></Col>
-                </Row>
                 <Row className='my-2'>
                     <Col></Col>
                     <Col>
