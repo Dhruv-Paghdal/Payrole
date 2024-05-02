@@ -163,7 +163,7 @@ exports.add = async(req, res) => {
             employeeId = companyExist.companyCode + "-" + "01"
         }
         else {
-            let number = parseInt(recentEmployee.employeeId.slice(companyExist.companyCode + 1)) + 1;
+            let number = parseInt(recentEmployee.employeeId.slice(companyExist.companyCode.length + 1)) + 1;
             if(number < 10){
                 number = "0" + number.toString()
             }
