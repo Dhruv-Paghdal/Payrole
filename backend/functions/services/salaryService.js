@@ -233,9 +233,9 @@ exports.calculate = async (req, res) => {
                     if(employee?.recess > 0) {
                       extraHour = extraHour - moment.duration(employee.recess, 'minutes').asHours();
                     }
-                    if(extraHour < 0){
-                      totalHour = totalHour + extraHour
-                    }
+                    // if(extraHour < 0){
+                    //  totalHour = totalHour + extraHour
+                    // }
                     if (totalHour >= (data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours())) {
                       workingDay = 1;
                     }
