@@ -221,7 +221,7 @@ exports.calculate = async (req, res) => {
     for (const data of salaryArray) {
         for (const employee of employeeData) {
             let totalHour = 0;
-            let inCompleteHour = 0;
+            // let inCompleteHour = 0;
             let extraHour = 0;
             let workingDay = 0;
             if (employee["emp_id"] == data["employeeId"]) {
@@ -233,24 +233,24 @@ exports.calculate = async (req, res) => {
                     if(employee?.recess > 0) {
                       extraHour = extraHour - moment.duration(employee.recess, 'minutes').asHours();
                     }
+                    workingDay = 1;
                     // if(extraHour < 0){
                     //  totalHour = totalHour + extraHour
                     // }
-                    if (totalHour >= (data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours())) {
-                      workingDay = 1;
-                    }
-                    else {
-                      inCompleteHour = totalHour;
-                    }
+                    // if (totalHour >= (data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours())) {
+                    //   workingDay = 1;
+                    // }
+                    // else {
+                    //   inCompleteHour = totalHour;
+                    // }
                     data["travelDays"] = data?.travelDays ? (data.travelDays + 1) : 1;
                     data["totalWorkingDays"] = data?.totalWorkingDays ? (data.totalWorkingDays + workingDay) : workingDay;
                     data["extraHour"] = parseFloat(data?.extraHour) ? parseFloat(data.extraHour) + parseFloat(extraHour) : parseFloat(extraHour)
-                    data["inCompleteHour"] = parseFloat(data?.inCompleteHour) ? parseFloat(data.inCompleteHour) + parseFloat(inCompleteHour) : parseFloat(inCompleteHour)
+                    // data["inCompleteHour"] = parseFloat(data?.inCompleteHour) ? parseFloat(data.inCompleteHour) + parseFloat(inCompleteHour) : parseFloat(inCompleteHour)
                 }
                 else{
-                  const date = new Date(employee.date)
-                  if((!companyDetails?.weekOffDay) || (companyDetails.weekOffDay.toLowerCase() !== moment(date).format("dddd").toLowerCase())) {
-                    data["leaveList"].push(moment(date).format("DD-MM-YYYY"))
+                  if((!companyDetails?.weekOffDay) || (companyDetails.weekOffDay.toLowerCase() !== moment(employee.date, "DD-MM-YYYY").format("dddd").toLowerCase())) {
+                    data["leaveList"].push(moment(employee.date, "DD-MM-YYYY").format("DD-MM-YYYY"))
                   }
                 }
             }
@@ -270,11 +270,11 @@ exports.calculate = async (req, res) => {
         //     data["inCompleteHour"] = data["inCompleteHour"] + extra;
         //   }
         // }
-        if (data["inCompleteHour"]) {
-          let fix = data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours();
-          data["totalWorkingDays"] = data["totalWorkingDays"] + Math.round(data["inCompleteHour"] / fix);
-        }
-        delete data["inCompleteHour"]
+        // if (data["inCompleteHour"]) {
+        //   let fix = data["fixedWorkingHour"] + moment.duration(data["recessTime"], 'minutes').asHours();
+        //   data["totalWorkingDays"] = data["totalWorkingDays"] + Math.round(data["inCompleteHour"] / fix);
+        // }
+        // delete data["inCompleteHour"]
         data["extraHour"] >= 2 ? data["extraHourSalary"] = (data["extraHour"] / 6) * data["fixedSalary"]: delete data["extraHour"];
         if (data["advanceSalaryList"]) {
           let total = 0;
